@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.junit.launchconfig">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/AD-e-invoice/src/test/java/com/klst/xrechnung/test/CreateUblTest.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value=""/>
+<booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
+<stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
+<stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.klst.xrechnung.test.CreateUblTest"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="AD-e-invoice"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#13;&#10;-DPropertyFile=${workspace_loc}/AD392.home/Adempiere.properties&#13;&#10;-DADEMPIERE_HOME=${workspace_loc}/AD392.home&#13;&#10;-Xms128M&#13;&#10;-Xmx256M&#10;-Dorg.adempiere.server.embedded=true&#10;-Dsun.awt.disablegrab=true"/>
+</launchConfiguration>
