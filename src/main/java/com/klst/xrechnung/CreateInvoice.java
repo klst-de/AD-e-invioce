@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.MBPartner;
@@ -26,6 +24,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.klst.cius.IContact;
+import com.klst.cius.PostalAddress;
 import com.klst.marshaller.AbstactTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
 import com.klst.ubl.Address;
@@ -71,6 +70,45 @@ public class CreateInvoice extends SvrProcess {
 		return ublInvoice.getId();
 	}
 	
+	protected PostalAddress mapLocationToAddress(int location_ID) {
+		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
+		String countryCode = mLocation.getCountry().getCountryCode();
+		String postalCode = mLocation.getPostal();
+		String city = mLocation.getCity();
+		String street = null;
+		String a1 = mLocation.getAddress1();
+		String a2 = mLocation.getAddress2();
+		String a3 = mLocation.getAddress3();
+		String a4 = mLocation.getAddress4();
+		Address address = new Address(countryCode, postalCode, city, street);
+		if(a1!=null) address.setAddressLine1(a1);
+		if(a2!=null) address.setAddressLine2(a2);
+		if(a3!=null) address.setAddressLine3(a3);
+		if(a4!=null) address.setAdditionalStreet(a4);
+		return address;
+	}
+	
+	protected IContact mapUserToContact(int user_ID) {
+		MUser mUser = new MUser(Env.getCtx(), user_ID, get_TrxName());
+		String contactName = mUser.getName();
+		String contactTel = mUser.getPhone();
+		String contactMail = mUser.getEMail();
+		IContact contact = new Contact(contactName, contactTel, contactMail);
+		return contact;
+	}
+
+	protected Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
+		if("PCE".equals(unitCode)) return new Quantity("EA", quantity);
+		if("Stk.".equals(unitCode)) return new Quantity("EA", quantity);
+		if("HR".equals(unitCode)) return new Quantity("HUR", quantity); // @see https://github.com/klst-de/e-invoice/issues/4
+		if("DA".equals(unitCode)) return new Quantity("DAY", quantity);
+		if("kg".equals(unitCode)) return new Quantity("KGM", quantity);
+		if("m".equals(unitCode)) return new Quantity("MTR", quantity);
+		if("pa".equals(unitCode)) return new Quantity("PA", quantity); // weder PA noch PK sind valid?
+		if("p100".equals(unitCode)) return new Quantity("CEN", quantity);
+		return new Quantity(unitCode, quantity);
+	}
+	
 	Invoice makeInvoice(MInvoice adInvoice) {
 		mInvoice = adInvoice;
 		ublInvoice = new CommercialInvoice(XRECHNUNG_12);
@@ -113,13 +151,8 @@ public class CreateInvoice extends SvrProcess {
 		MOrg mOrg = new MOrg(Env.getCtx(), mAD_Org_ID, get_TrxName());
 		sellerRegistrationName = mOrg.getName();
 		MOrgInfo mOrgInfo = MOrgInfo.get(Env.getCtx(), mAD_Org_ID, get_TrxName());		
-		Address address = makeAddress(mOrgInfo.getC_Location_ID());
-		
-		MUser mUser = new MUser(Env.getCtx(), mSalesRep_ID, get_TrxName());
-		String contactName = mUser.getName();
-		String contactTel = mUser.getPhone();
-		String contactMail = mUser.getEMail();
-		IContact contact =  new Contact(contactName, contactTel, contactMail);
+		PostalAddress address = mapLocationToAddress(mOrgInfo.getC_Location_ID());
+		IContact contact = mapUserToContact(mSalesRep_ID);
 		LOG.info("sellerRegistrationName:"+sellerRegistrationName +
 				" companyID:"+companyID +
 				" companyLegalForm:"+ompanyLegalForm
@@ -136,24 +169,6 @@ public class CreateInvoice extends SvrProcess {
 		LOG.info("finished.");
 	}
 	
-	Address makeAddress(int location_ID) {
-		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
-		String countryCode = mLocation.getCountry().getCountryCode();
-		String postalCode = mLocation.getPostal();
-		String city = mLocation.getCity();
-		String street = null;
-		String a1 = mLocation.getAddress1();
-		String a2 = mLocation.getAddress2();
-		String a3 = mLocation.getAddress3();
-		String a4 = mLocation.getAddress4();
-		Address address = new Address(countryCode, postalCode, city, street);
-		if(a1!=null) address.setAddressLine1(a1);
-		if(a2!=null) address.setAddressLine2(a2);
-		if(a3!=null) address.setAddressLine3(a3);
-		if(a4!=null) address.setAdditionalStreet(a4);
-		return address;
-	}
-	
 	void makeBuyerGroup() {
 		int mBP_ID = mInvoice.getC_BPartner_ID();
 		int mC_Location_ID = mInvoice.getC_BPartner_Location().getC_Location_ID();
@@ -161,34 +176,8 @@ public class CreateInvoice extends SvrProcess {
 		
 		MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
 		String buyerName = mBPartner.getName();
-		Address address = makeAddress(mC_Location_ID);
-//		LOG.info("AddressLine1:"+testAddress.getAddressLine1() +
-//				" AddressLine2:"+testAddress.getAddressLine2() +
-//				" AddressLine3:"+testAddress.getAddressLine3() +
-//				" AdditionalStreet:"+testDoc.getBuyerPostalAddress().getAdditionalStreet()
-//				);
-//		
-//		MLocation mLocation = new MLocation(Env.getCtx(), mC_Location_ID, get_TrxName());
-//		String countryCode = mLocation.getCountry().getCountryCode();
-//		String postalCode = mLocation.getPostal();
-//		String city = mLocation.getCity();
-//		String street = null;
-//		String a1 = mLocation.getAddress1();
-//		String a2 = mLocation.getAddress2();
-//		String a3 = mLocation.getAddress3();
-//		String a4 = mLocation.getAddress4();
-//		Address address = new Address(countryCode, postalCode, city, street);
-//		if(a1!=null) address.setAddressLine1(a1);
-//		if(a2!=null) address.setAddressLine2(a2);
-//		if(a3!=null) address.setAddressLine3(a3);
-//		if(a4!=null) address.setAdditionalStreet(a4);
-		
-		MUser mUser = new MUser(Env.getCtx(), mUser_ID, get_TrxName());
-		String contactName = mUser.getName();
-		String contactTel = mUser.getPhone();
-		String contactMail = mUser.getEMail();
-		IContact contact = // TODO salesRep
-				new Contact(contactName, contactTel, contactMail);
+		PostalAddress address = mapLocationToAddress(mC_Location_ID);
+		IContact contact = mapUserToContact(mUser_ID);
 		ublInvoice.setBuyer(buyerName, address, contact);
 		LOG.info("finished.");
 	}
@@ -201,11 +190,12 @@ public class CreateInvoice extends SvrProcess {
 				+" FROM "+MBankAccount.Table_Name
 				+" WHERE "+MBankAccount.COLUMNNAME_C_Bank_ID+"=?"
 				+" AND "+MBankAccount.COLUMNNAME_IsActive+"=?"; 
-		LOG.info("mBank ----------------------------->:"+mBank + "\n"+sql);
 		int bankAccount_ID = DB.getSQLValueEx(get_TrxName(), sql, mOrgInfo.getTransferBank_ID(), true);
 		MBankAccount mBankAccount = new MBankAccount(Env.getCtx(), bankAccount_ID, get_TrxName());
 		
-		if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit)) {
+		if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit) 
+		|| mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit) 
+				) {
 			PaymentMeansCode paymentMeansCode = PaymentMeansCode.CreditTransfer;
 			IBANId iban = new IBANId(mBankAccount.getIBAN());
 			ublInvoice.addPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck"); // TODO
@@ -214,7 +204,6 @@ public class CreateInvoice extends SvrProcess {
 		}
 
 		MPaymentTerm mPaymentTerm = new MPaymentTerm(Env.getCtx(), mInvoice.getC_PaymentTerm_ID(), get_TrxName());
-		LOG.info("PaymentTerm ----------------------------->:"+mPaymentTerm);
 //		ublInvoice.addPaymentTerms("#SKONTO#TAGE=7#PROZENT=2.00#"); // TODO
 		ublInvoice.addPaymentTerms(mPaymentTerm.getName());
 		LOG.info("finished.");
@@ -248,7 +237,7 @@ public class CreateInvoice extends SvrProcess {
 			BigDecimal taxRate = tax.getRate().setScale(SCALE, RoundingMode.HALF_UP);
 			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
 			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
-			LOG.info("vatCategory =============================" +vatCategory);
+			LOG.info("vatCategory:" +vatCategory);
 			ublInvoice.addVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt())
 					, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt())
 					, vatCategory   // TODO mehr als eine mappen
@@ -269,7 +258,7 @@ public class CreateInvoice extends SvrProcess {
 				BigDecimal taxRate = invoiceLine.getC_Tax().getRate().setScale(SCALE, RoundingMode.HALF_UP);
 				VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
 				InvoiceLine line = new InvoiceLine(Integer.toString(lineId)
-						, new Quantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
+						, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
 						, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
 						, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
 						, invoiceLine.getProduct().getName()
@@ -286,20 +275,5 @@ public class CreateInvoice extends SvrProcess {
 		makeInvoice(mInvoice);
 		return transformer.fromModel(ublInvoice);
 	}
-
-//	private static final String TEST_INVOICE = "27727"; // "26876"
-//	private static final int TEST_INVOICE_ID = 1051335; // 1053178; // 1051341
-//	
-//	public static void main(String[] args) {
-//		LOG.info("main");
-//		Adempiere.startupEnvironment(false); // boolean isClient
-//		Properties ctx = Env.getCtx();
-//		MInvoice mInvoice = new MInvoice(ctx, TEST_INVOICE_ID, "xxx"); // String trxName xxx
-//		
-//		CreateInvoice createInvoice = new CreateInvoice();
-//		byte[] bytes = createInvoice.toUbl(mInvoice);
-//		String xml = new String(bytes);
-//		LOG.info("xml=\n"+xml);
-//	}
 
 }

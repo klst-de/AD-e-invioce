@@ -39,8 +39,16 @@ public class CreateUblTest {
 	
 	private static int testindex;
 	private static final int[] INVOICE_ID = {
+//			1000009 , // wg. pa !
+			1000045 , // wg. DA 
+//			1012810 , // wg. RO !
+			1019117 , // wg. kg 
+			1031534 , // wg. p100
+			1032760 , // wg. m
+			1039639,  // wg. PCE Stk.
+//			1045662 , // wg. PAU!
 			1051335 ,
-			1053178 ,
+			1053178 , // wg. HR
 			1051341 };
 	
 	private static Check check;
@@ -197,7 +205,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	
-//	@Test
+	@Test
 	public void test1() {
 		CreateInvoice createInvoice = new CreateInvoice();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[1], createInvoice.get_TrxName());
