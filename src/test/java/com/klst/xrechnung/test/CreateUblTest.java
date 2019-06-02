@@ -42,6 +42,7 @@ public class CreateUblTest {
 //			1000009 , // wg. pa !
 			1000045 , // wg. DA 
 //			1012810 , // wg. RO !
+			1053453 , // wg. Delivery
 			1019117 , // wg. kg 
 			1031534 , // wg. p100
 			1032760 , // wg. m
@@ -49,7 +50,8 @@ public class CreateUblTest {
 //			1045662 , // wg. PAU!
 			1051335 ,
 			1053178 , // wg. HR
-			1051341 };
+			1051341 ,
+			1053453 }; // wg. Delivery
 	
 	private static Check check;
 	

@@ -2,6 +2,10 @@ package com.klst.xrechnung;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -11,6 +15,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBank;
 import org.compiere.model.MBankAccount;
+import org.compiere.model.MInOut;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
@@ -30,8 +35,10 @@ import com.klst.marshaller.UblInvoiceTransformer;
 import com.klst.ubl.Address;
 import com.klst.ubl.CommercialInvoice;
 import com.klst.ubl.Contact;
+import com.klst.ubl.Delivery;
 import com.klst.ubl.Invoice;
 import com.klst.ubl.InvoiceLine;
+import com.klst.ubl.Party;
 import com.klst.ubl.VatCategory;
 import com.klst.un.unece.uncefact.Amount;
 import com.klst.un.unece.uncefact.IBANId;
@@ -70,7 +77,7 @@ public class CreateInvoice extends SvrProcess {
 		return ublInvoice.getId();
 	}
 	
-	protected PostalAddress mapLocationToAddress(int location_ID) {
+	protected Address mapLocationToAddress(int location_ID) {
 		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
 		String countryCode = mLocation.getCountry().getCountryCode();
 		String postalCode = mLocation.getPostal();
@@ -88,12 +95,12 @@ public class CreateInvoice extends SvrProcess {
 		return address;
 	}
 	
-	protected IContact mapUserToContact(int user_ID) {
+	protected Contact mapUserToContact(int user_ID) {
 		MUser mUser = new MUser(Env.getCtx(), user_ID, get_TrxName());
 		String contactName = mUser.getName();
 		String contactTel = mUser.getPhone();
 		String contactMail = mUser.getEMail();
-		IContact contact = new Contact(contactName, contactTel, contactMail);
+		Contact contact = new Contact(contactName, contactTel, contactMail);
 		return contact;
 	}
 
@@ -109,13 +116,113 @@ public class CreateInvoice extends SvrProcess {
 		return new Quantity(unitCode, quantity);
 	}
 	
+	/* optional elements:
+	 * VAT accounting currency code, BT-6
+	 * Value added tax point date, BT-7
+	 * Value added tax point date code, BT-8
+	 * Payment due date, BT-9
+	 * Project reference, BT-11
+	 * Contract reference, BT-12
+	 * Purchase order reference, BT-13
+	 * Sales order reference, BT-14
+	 * Receiving advice reference, BT-15
+	 * Despatch advice reference, BT-16        --------- Eine Kennung für eine referenzierte Versandanzeige. LS
+	 * Tender or lot reference, BT-17
+	 * Invoiced object identifier, BT-18 / + Invoiced object identifier/Scheme identifier
+	 * Buyer accounting reference, BT-19
+	 * Payment terms, BT-20         --------> makePaymentGroup()
+	 * INVOICE NOTE, BG-1
+	 * PRECEDING INVOICE REFERENCE, BG-3
+	 * PAYEE, BG-10
+	 * SELLER TAX REPRESENTATIVE PARTY BG-11,
+	 * DELIVERY INFORMATION, BG-13                            
+	 * DOCUMENT LEVEL ALLOWANCES, BG-20
+	 * DOCUMENT LEVEL CHARGES, BG-21
+	 * ADDITIONAL SUPPORTING DOCUMENTS, BG-24   ---------------------- MZ
+	 */
+	// overwrite this to set optional elements
+	protected void makeOptionals() {
+//		ublInvoice.setTaxCurrencyCode(mInvoice.getC_Currency().getISO_Code()); // setTaxCurrencyCode ist nicht implementiert
+		
+//		ublInvoice.setDueDate(aTimestamp);
+//		ublInvoice.addNote("Es gelten unsere Allgem. Geschäftsbedingungen.");	
+		
+		//  LS -> DELIVERY : 
+/* minout Kandidaten @see GridTable.createSelectSql SELECT * FROM C_Invoice WHERE C_Invoice_ID=1051476;
+SELECT * FROM M_InOut 
+WHERE (M_InOut.MovementType IN ('C-')) 
+  AND  ((C_Invoice_ID=1051476 AND IsSOTrx='Y') -- LS mit RE
+         OR M_InOut_ID IN (
+  SELECT m.M_InOut_ID from M_InOut m
+    LEFT JOIN M_InOutline ml ON ml.M_InOut_ID = m.M_InOut_ID
+    LEFT JOIN c_invoiceline il ON il.M_InOutline_ID = ml.M_InOutline_ID
+  where il.C_Invoice_ID=1051476 AND m.MovementType IN ('C-')
+))
+  AND M_InOut.AD_Client_ID IN(0,1000000) 
+  AND M_InOut.AD_Org_ID IN(0,1000000,1000001,1000002) 
+  AND (M_InOut.M_InOut_ID IS NULL OR M_InOut.M_InOut_ID NOT IN ( SELECT Record_ID FROM AD_Private_Access WHERE AD_Table_ID = 319 AND AD_User_ID <> 1000016 AND IsActive = 'Y' ))
+
+ */
+		final String subselect = "SELECT m.M_InOut_ID FROM M_InOut m"
+				+" LEFT JOIN M_InOutline ml ON ml.M_InOut_ID = m.M_InOut_ID"
+				+" LEFT JOIN c_invoiceline il ON il.M_InOutline_ID = ml.M_InOutline_ID"
+				+" WHERE il.C_Invoice_ID=? AND m.MovementType IN ('"+MInOut.MOVEMENTTYPE_CustomerShipment+"')"; // 2
+		final String sql = "SELECT *"
+				+" FROM "+MInOut.Table_Name
+				+" WHERE "+MInOut.COLUMNNAME_MovementType + "='"+MInOut.MOVEMENTTYPE_CustomerShipment+"'"
+				+" AND (("+MInOut.COLUMNNAME_C_Invoice_ID + "= ? AND "+MInOut.COLUMNNAME_IsSOTrx+"='Y')"  // 1
+				+       " OR "+MInOut.COLUMNNAME_M_InOut_ID + " IN("+subselect+"))"
+				+" AND "+MInOut.COLUMNNAME_IsActive+"='Y'"; 
+		LOG.info("\n"+sql);
+		PreparedStatement pstmt = DB.prepareStatement(sql, get_TrxName());
+		ResultSet rs = null;
+		List<MInOut> mInOutList = new ArrayList<MInOut>();
+		try {
+			int invoice_ID = mInvoice.getC_Invoice_ID();
+			DB.setParameter(pstmt, 1, invoice_ID);
+			DB.setParameter(pstmt, 2, invoice_ID);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {
+				MInOut mInOut = new MInOut(Env.getCtx(), rs, get_TrxName());
+				LOG.info("mInOut:"+mInOut);
+				mInOutList.add(mInOut);
+			}
+			rs.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(mInOutList.size()==1) {
+			int mBP_ID = mInOutList.get(0).getC_BPartner_ID();
+			if(mBP_ID==mInvoice.getC_BPartner_ID()) {
+				LOG.info("!!!!!!!!!!!!!!!!!!!!!! kein Delivery! size="+mInOutList.size());
+			} else {
+				int mC_Location_ID = mInOutList.get(0).getC_BPartner_Location().getC_Location_ID();
+				int mUser_ID = mInOutList.get(0).getAD_User_ID();
+				
+				MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
+				String name = mBPartner.getName();
+				Address address = mapLocationToAddress(mC_Location_ID);
+				Contact contact = mapUserToContact(mUser_ID);
+				address = null; // wg. UBL-CR-394 	warning
+				contact = null; // wg. UBL-CR-398 	warning
+				Party party = new Party(name, address, contact);
+				Delivery delivery = new Delivery(party);
+				delivery.setActualDate(mInOutList.get(0).getMovementDate());
+				ublInvoice.addDelivery(delivery);
+			}
+		} else {
+			LOG.warning("!!!!!!!!!!!!!!!!!!!!!! size="+mInOutList.size());
+		}
+		LOG.info("overwrite this to set optional elements.");
+	}
+
 	Invoice makeInvoice(MInvoice adInvoice) {
 		mInvoice = adInvoice;
 		ublInvoice = new CommercialInvoice(XRECHNUNG_12);
 		ublInvoice.setId(mInvoice.getDocumentNo());
 		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
 		ublInvoice.setDocumentCurrencyCode(mInvoice.getC_Currency().getISO_Code());
-//		ublInvoice.setTaxCurrencyCode(mInvoice.getC_Currency().getISO_Code()); TODO
 		String mPOReference = mInvoice.getPOReference(); // kann null sein
 		if(mPOReference==null) {
 			I_C_Order order = mInvoice.getC_Order();
@@ -127,7 +234,7 @@ public class CreateInvoice extends SvrProcess {
 		}
 		ublInvoice.setBuyerReference(mPOReference);
 
-//		makeOptionals(ublInvoice);
+		makeOptionals();
 
 		makeSellerGroup();
 		 
@@ -136,7 +243,7 @@ public class CreateInvoice extends SvrProcess {
 		makesDocumentTotalsGroup();
 		makeVatBreakDownGroup();
 		makeLineGroup();
-//		LOG.info("finished.");
+		LOG.info("finished.");
 		return ublInvoice;
 	}
 
