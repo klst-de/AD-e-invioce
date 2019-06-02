@@ -5,7 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/base"/>
-	<classpathentry kind="lib" path="/e-invoice/de.klst.x-factur-0.0.1.jar" sourcepath="/e-invoice/src/main/java"/>
+	<classpathentry kind="lib" path="/e-invoice/de.klst.x-factur-0.0.2.jar" sourcepath="/e-invoice/src/main/java"/>
 	<classpathentry kind="lib" path="/e-invoice/src/test/lib/validationtool-1.1.0-SNAPSHOT.jar" sourcepath="/kosit-validator/src/main/java"/>
 	<classpathentry kind="lib" path="/e-invoice/src/test/lib/assertj-core-3.8.0.jar"/>
 	<classpathentry kind="lib" path="/e-invoice/src/test/lib/commons-lang3-3.5.jar"/>
