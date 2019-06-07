@@ -28,8 +28,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.klst.cius.IContact;
-import com.klst.cius.PostalAddress;
 import com.klst.marshaller.AbstactTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
 import com.klst.ubl.Address;
@@ -198,17 +196,19 @@ WHERE (M_InOut.MovementType IN ('C-'))
 				LOG.info("!!!!!!!!!!!!!!!!!!!!!! kein Delivery! size="+mInOutList.size());
 			} else {
 				int mC_Location_ID = mInOutList.get(0).getC_BPartner_Location().getC_Location_ID();
-				int mUser_ID = mInOutList.get(0).getAD_User_ID();
+//				int mUser_ID = mInOutList.get(0).getAD_User_ID();
 				
 				MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
 				String name = mBPartner.getName();
 				Address address = mapLocationToAddress(mC_Location_ID);
-				Contact contact = mapUserToContact(mUser_ID);
-				address = null; // wg. UBL-CR-394 	warning
-				contact = null; // wg. UBL-CR-398 	warning
-				Party party = new Party(name, address, contact);
+//				Contact contact = mapUserToContact(mUser_ID);
+//				address = null; // wg. UBL-CR-394 	warning
+//				contact = null; // wg. UBL-CR-398 	warning
+//				Party party = new Party(name, address, contact);
+				Party party = new Party(name, null, null);
 				Delivery delivery = new Delivery(party);
 				delivery.setActualDate(mInOutList.get(0).getMovementDate());
+				delivery.setLocationAddress(address);
 				ublInvoice.addDelivery(delivery);
 			}
 		} else {
@@ -258,8 +258,8 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		MOrg mOrg = new MOrg(Env.getCtx(), mAD_Org_ID, get_TrxName());
 		sellerRegistrationName = mOrg.getName();
 		MOrgInfo mOrgInfo = MOrgInfo.get(Env.getCtx(), mAD_Org_ID, get_TrxName());		
-		PostalAddress address = mapLocationToAddress(mOrgInfo.getC_Location_ID());
-		IContact contact = mapUserToContact(mSalesRep_ID);
+		Address address = mapLocationToAddress(mOrgInfo.getC_Location_ID());
+		Contact contact = mapUserToContact(mSalesRep_ID);
 		LOG.info("sellerRegistrationName:"+sellerRegistrationName +
 				" companyID:"+companyID +
 				" companyLegalForm:"+ompanyLegalForm
@@ -283,8 +283,8 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		
 		MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
 		String buyerName = mBPartner.getName();
-		PostalAddress address = mapLocationToAddress(mC_Location_ID);
-		IContact contact = mapUserToContact(mUser_ID);
+		Address address = mapLocationToAddress(mC_Location_ID);
+		Contact contact = mapUserToContact(mUser_ID);
 		ublInvoice.setBuyer(buyerName, address, contact);
 		LOG.info("finished.");
 	}

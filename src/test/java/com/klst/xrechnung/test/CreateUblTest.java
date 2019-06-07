@@ -36,13 +36,12 @@ import de.kosit.validationtool.impl.DefaultCheck;
 public class CreateUblTest {
 
 	private static final Logger LOG = Logger.getLogger(CreateUblTest.class.getName());
-	
+
 	private static int testindex;
 	private static final int[] INVOICE_ID = {
 //			1000009 , // wg. pa !
 			1000045 , // wg. DA 
 //			1012810 , // wg. RO !
-			1053453 , // wg. Delivery
 			1019117 , // wg. kg 
 			1031534 , // wg. p100
 			1032760 , // wg. m
@@ -210,7 +209,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	@Test
 	public void test1() {
 		CreateInvoice createInvoice = new CreateInvoice();
-		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[1], createInvoice.get_TrxName());
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, createInvoice.get_TrxName());
 		LOG.info(mInvoice.toString());
 
 		byte[] xmlBytes = createInvoice.toUbl(mInvoice);
@@ -219,7 +218,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-	@Test
+//	@Test
 	public void ubl() {
 		for (int i = 0; i < INVOICE_ID.length; i++) {
 			CreateInvoice createInvoice = new CreateInvoice();
