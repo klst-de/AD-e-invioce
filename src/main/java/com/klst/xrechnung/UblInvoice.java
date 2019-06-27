@@ -45,9 +45,9 @@ import com.klst.un.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
-public class CreateInvoice extends SvrProcess {
+public class UblInvoice extends SvrProcess {
 
-	private static final Logger LOG = Logger.getLogger(CreateInvoice.class.getName());
+	private static final Logger LOG = Logger.getLogger(UblInvoice.class.getName());
 	private static final String XRECHNUNG_12 = "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2";
 
 	protected AbstactTransformer transformer; // ein Singleton
@@ -55,7 +55,7 @@ public class CreateInvoice extends SvrProcess {
 	protected Invoice ublInvoice; // to UBL object
 
 	// ctor
-	public CreateInvoice() {
+	public UblInvoice() {
 		super();
 		transformer = UblInvoiceTransformer.getInstance();
 	}

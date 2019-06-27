@@ -24,7 +24,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.klst.xrechnung.CreateInvoice;
+import com.klst.xrechnung.UblInvoice;
 
 import de.kosit.validationtool.api.Check;
 import de.kosit.validationtool.api.CheckConfiguration;
@@ -195,9 +195,9 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	    return sb.toString();
 	}
 
-//	@Test
+	@Test
 	public void test0() {
-		CreateInvoice createInvoice = new CreateInvoice();
+		UblInvoice createInvoice = new UblInvoice();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[0], createInvoice.get_TrxName());
 		LOG.info(mInvoice.toString());
 		
@@ -208,7 +208,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	
 	@Test
 	public void test1() {
-		CreateInvoice createInvoice = new CreateInvoice();
+		UblInvoice createInvoice = new UblInvoice();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, createInvoice.get_TrxName());
 		LOG.info(mInvoice.toString());
 
@@ -218,10 +218,10 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-//	@Test
+	@Test
 	public void ubl() {
 		for (int i = 0; i < INVOICE_ID.length; i++) {
-			CreateInvoice createInvoice = new CreateInvoice();
+			UblInvoice createInvoice = new UblInvoice();
 			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], createInvoice.get_TrxName());
 			LOG.info(mInvoice.toString());
 			byte[] xmlBytes = createInvoice.toUbl(mInvoice);
