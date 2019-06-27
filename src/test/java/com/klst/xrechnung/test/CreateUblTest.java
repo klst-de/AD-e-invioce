@@ -50,7 +50,7 @@ public class CreateUblTest {
 			1051335 ,
 			1053178 , // wg. HR
 			1051341 ,
-			1053453 }; // wg. Delivery
+			1053453 }; // wg. Delivery und Beschreibung
 	
 	private static Check check;
 	

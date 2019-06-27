@@ -143,7 +143,13 @@ public class UblInvoice extends SvrProcess {
 //		ublInvoice.setTaxCurrencyCode(mInvoice.getC_Currency().getISO_Code()); // setTaxCurrencyCode ist nicht implementiert
 		
 //		ublInvoice.setDueDate(aTimestamp);
-//		ublInvoice.addNote("Es gelten unsere Allgem. Geschäftsbedingungen.");	
+		
+		// Description ==> optional INVOICE NOTE
+		String description = mInvoice.getDescription();
+		if(description!=null) {
+//			ublInvoice.addNote("Es gelten unsere Allgem. Geschäftsbedingungen."); // Bsp	
+			ublInvoice.addNote(description);
+		}
 		
 		//  LS -> DELIVERY : 
 /* minout Kandidaten @see GridTable.createSelectSql SELECT * FROM C_Invoice WHERE C_Invoice_ID=1051476;
