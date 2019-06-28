@@ -24,12 +24,14 @@ import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MPaymentTerm;
 import org.compiere.model.MUser;
+import org.compiere.model.X_C_DocType;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.klst.marshaller.AbstactTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
+import com.klst.ubl.AdditionalSupportingDocument;
 import com.klst.ubl.Address;
 import com.klst.ubl.CommercialInvoice;
 import com.klst.ubl.Contact;
@@ -149,6 +151,14 @@ public class UblInvoice extends SvrProcess {
 		if(description!=null) {
 //			ublInvoice.addNote("Es gelten unsere Allgem. Geschäftsbedingungen."); // Bsp	
 			ublInvoice.addNote(description);
+			
+			
+			// TODO raus nur Test AdditionalSupportingDocument
+			LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
+			AdditionalSupportingDocument asd = new AdditionalSupportingDocument("1","AdditionalSupportingDocument description");
+			asd.setExternalDocumentLocation("a URL TODO");
+			ublInvoice.addAdditionalSupportingDocument(asd);
+
 		}
 		
 		//  LS -> DELIVERY : 
@@ -384,9 +394,16 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		LOG.info("finished. "+invoiceLines.size() + " lines.");
 	}
 
+	// TODO: idee mInvoice.get_xmlDocument ... für xRechnung nutzen!!!!
 	public byte[] toUbl(MInvoice mInvoice) {
-		makeInvoice(mInvoice);
-		return transformer.fromModel(ublInvoice);
+		String docBaseType = mInvoice.getC_DocTypeTarget().getDocBaseType();
+		if(X_C_DocType.DOCBASETYPE_ARInvoice.equals(docBaseType)) { // "ARI Accounts Receivable Invoice"/Ausgangsrechnung
+			makeInvoice(mInvoice);
+			return transformer.fromModel(ublInvoice);			
+		} else {
+			LOG.info("docBaseType='"+docBaseType + "' for "+mInvoice);
+		}
+		return null;
 	}
 
 }

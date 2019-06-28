@@ -1,6 +1,7 @@
 package com.klst.xrechnung.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
@@ -39,6 +40,7 @@ public class CreateUblTest {
 
 	private static int testindex;
 	private static final int[] INVOICE_ID = {
+			1052923 , // Gutschrift!
 //			1000009 , // wg. pa !
 			1000045 , // wg. DA 
 //			1012810 , // wg. RO !
@@ -197,35 +199,34 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 
 	@Test
 	public void test0() {
-		UblInvoice createInvoice = new UblInvoice();
-		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[0], createInvoice.get_TrxName());
+		UblInvoice ublInvoice = new UblInvoice();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[0], ublInvoice.get_TrxName());
 		LOG.info(mInvoice.toString());
 		
-		byte[] xmlBytes = createInvoice.toUbl(mInvoice);
-		assertEquals(createInvoice.getDocumentNo(), mInvoice.getDocumentNo());
-		assertTrue(check(xmlBytes));
+		byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
+		assertNull(xmlBytes);
 	}
 	
 	@Test
 	public void test1() {
-		UblInvoice createInvoice = new UblInvoice();
-		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, createInvoice.get_TrxName());
+		UblInvoice ublInvoice = new UblInvoice();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, ublInvoice.get_TrxName());
 		LOG.info(mInvoice.toString());
 
-		byte[] xmlBytes = createInvoice.toUbl(mInvoice);
+		byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
 		LOG.info("xml=\n"+new String(xmlBytes));
-		assertEquals(createInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 		assertTrue(check(xmlBytes));
 	}
 	   
-	@Test
+//	@Test
 	public void ubl() {
-		for (int i = 0; i < INVOICE_ID.length; i++) {
-			UblInvoice createInvoice = new UblInvoice();
-			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], createInvoice.get_TrxName());
+		for (int i = 1; i < INVOICE_ID.length; i++) {
+			UblInvoice ublInvoice = new UblInvoice();
+			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], ublInvoice.get_TrxName());
 			LOG.info(mInvoice.toString());
-			byte[] xmlBytes = createInvoice.toUbl(mInvoice);
-			assertEquals(createInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+			byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
+			assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 			assertTrue(check(xmlBytes));
 		}
 	}
