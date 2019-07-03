@@ -61,8 +61,9 @@ public class CreateUblTest {
     @BeforeClass
     public static void staticSetup() {
         LOG.info("startup - creating kosit validator");
-		String so = "file:/Users/eugen/Documents/eclipseWS/PHOTON-ad392/e-invoice/src/test/kositresources/1.2.0_2018-12-19/scenarios.xml";
-		URI scenarios =  URI.create(so); // TODO
+        String userDir = System.getProperty("user.dir").replace('\\', '/');
+		String so = "file:"+userDir.substring(2, userDir.length())+"/../e-invoice/src/test/kositresources/1.2.0_2018-12-19/scenarios.xml";
+		URI scenarios =  URI.create(so); // so == ablsolte path
 		CheckConfiguration config = new CheckConfiguration(scenarios);
 		LOG.info("config.ScenarioDefinition:"+config.getScenarioDefinition() +
 				"\n config.ScenarioRepository:"+config.getScenarioRepository()
@@ -201,17 +202,20 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	public void test0() {
 		UblInvoice ublInvoice = new UblInvoice();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[0], ublInvoice.get_TrxName());
-		LOG.info(mInvoice.toString());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
 		
 		byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
-		assertNull(xmlBytes);
+//		assertNull(xmlBytes);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
 	}
 	
 	@Test
 	public void test1() {
 		UblInvoice ublInvoice = new UblInvoice();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, ublInvoice.get_TrxName());
-		LOG.info(mInvoice.toString());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
 
 		byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
 		LOG.info("xml=\n"+new String(xmlBytes));
@@ -219,7 +223,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-//	@Test
+	@Test
 	public void ubl() {
 		for (int i = 1; i < INVOICE_ID.length; i++) {
 			UblInvoice ublInvoice = new UblInvoice();

@@ -30,11 +30,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.klst.marshaller.AbstactTransformer;
+import com.klst.marshaller.UblCreditNoteTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
 import com.klst.ubl.AdditionalSupportingDocument;
 import com.klst.ubl.Address;
 import com.klst.ubl.CommercialInvoice;
 import com.klst.ubl.Contact;
+import com.klst.ubl.CreditNote;
+import com.klst.ubl.CreditNoteLine;
 import com.klst.ubl.Delivery;
 import com.klst.ubl.Invoice;
 import com.klst.ubl.InvoiceLine;
@@ -44,6 +47,7 @@ import com.klst.un.unece.uncefact.Amount;
 import com.klst.un.unece.uncefact.IBANId;
 import com.klst.un.unece.uncefact.Quantity;
 import com.klst.un.unece.uncefact.UnitPriceAmount;
+import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
@@ -55,11 +59,11 @@ public class UblInvoice extends SvrProcess {
 	protected AbstactTransformer transformer; // ein Singleton
 	protected MInvoice mInvoice; // from AD object
 	protected Invoice ublInvoice; // to UBL object
-
+	protected CreditNote ublCreditNote; // to UBL object
+	
 	// ctor
 	public UblInvoice() {
 		super();
-		transformer = UblInvoiceTransformer.getInstance();
 	}
 
 	@Override
@@ -74,7 +78,7 @@ public class UblInvoice extends SvrProcess {
 	}
 
 	public String getDocumentNo() {
-		return ublInvoice.getId();
+		return ublCreditNote==null ? ublInvoice.getId() : ublCreditNote.getId();
 	}
 	
 	protected Address mapLocationToAddress(int location_ID) {
@@ -233,12 +237,8 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		LOG.info("overwrite this to set optional elements.");
 	}
 
-	Invoice makeInvoice(MInvoice adInvoice) {
-		mInvoice = adInvoice;
-		ublInvoice = new CommercialInvoice(XRECHNUNG_12);
-		ublInvoice.setId(mInvoice.getDocumentNo());
-		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
-		ublInvoice.setDocumentCurrencyCode(mInvoice.getC_Currency().getISO_Code());
+	// mapping POReference -> BuyerReference 
+	void mapBuyerReference() {
 		String mPOReference = mInvoice.getPOReference(); // kann null sein
 		if(mPOReference==null) {
 			I_C_Order order = mInvoice.getC_Order();
@@ -248,7 +248,20 @@ WHERE (M_InOut.MovementType IN ('C-'))
 				mPOReference = order.getPOReference();
 			}
 		}
-		ublInvoice.setBuyerReference(mPOReference);
+		if(mInvoice.isCreditMemo()) {
+			ublCreditNote.setBuyerReference(mPOReference);
+		} else {
+			ublInvoice.setBuyerReference(mPOReference);
+		}
+	}
+	
+	Invoice makeInvoice(MInvoice adInvoice) {
+		mInvoice = adInvoice;
+		ublInvoice = new CommercialInvoice(XRECHNUNG_12);
+		ublInvoice.setId(mInvoice.getDocumentNo());
+		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
+		ublInvoice.setDocumentCurrencyCode(mInvoice.getC_Currency().getISO_Code());
+		mapBuyerReference();
 
 		makeOptionals();
 
@@ -263,13 +276,34 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		return ublInvoice;
 	}
 
+	CreditNote makeCreditNote(MInvoice adInvoice) { // TODO
+		mInvoice = adInvoice;
+		ublCreditNote = new CreditNote(XRECHNUNG_12, null, DocumentNameCode.CreditNote);
+		ublCreditNote.setId(mInvoice.getDocumentNo());
+		ublCreditNote.setIssueDate(mInvoice.getDateInvoiced());
+		ublCreditNote.setDocumentCurrencyCode(mInvoice.getC_Currency().getISO_Code());
+		mapBuyerReference();
+//
+//		makeOptionals();
+
+		makeSellerGroup(); 
+		makeBuyerGroup();
+		
+		makePaymentGroup();
+		makesDocumentTotalsGroup();
+		makeVatBreakDownGroup();
+		makeLineGroup();
+		LOG.info("finished.");
+		return ublCreditNote;
+	}
+
 	void makeSellerGroup() {
 		int mAD_Org_ID = mInvoice.getAD_Org_ID();
 		int mSalesRep_ID = mInvoice.getSalesRep_ID();
 		
 		String sellerRegistrationName = null;
 		String companyID = null;
-		String ompanyLegalForm = null;
+		String companyLegalForm = null;
 		
 		MOrg mOrg = new MOrg(Env.getCtx(), mAD_Org_ID, get_TrxName());
 		sellerRegistrationName = mOrg.getName();
@@ -278,17 +312,19 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		Contact contact = mapUserToContact(mSalesRep_ID);
 		LOG.info("sellerRegistrationName:"+sellerRegistrationName +
 				" companyID:"+companyID +
-				" companyLegalForm:"+ompanyLegalForm
+				" companyLegalForm:"+companyLegalForm
 				);
 
+		// optional:
 		String taxCompanyId = mOrgInfo.getTaxID(); // UStNr DE....
-		ublInvoice.setSeller(sellerRegistrationName, address, contact, 
-				companyID, ompanyLegalForm);
-// optional:
-		ublInvoice.setSellerTaxCompanyId(taxCompanyId);
-//		partyNames.forEach(name -> {
-//			ublInvoice.addSellerPartyName(name);
-//		});
+		
+		if(mInvoice.isCreditMemo()) {
+			ublCreditNote.setSeller(sellerRegistrationName, address, contact, companyID, companyLegalForm);
+			ublCreditNote.setSellerTaxCompanyId(taxCompanyId);
+		} else {
+			ublInvoice.setSeller(sellerRegistrationName, address, contact, companyID, companyLegalForm);
+			ublInvoice.setSellerTaxCompanyId(taxCompanyId);
+		}
 		LOG.info("finished.");
 	}
 	
@@ -301,7 +337,11 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		String buyerName = mBPartner.getName();
 		Address address = mapLocationToAddress(mC_Location_ID);
 		Contact contact = mapUserToContact(mUser_ID);
-		ublInvoice.setBuyer(buyerName, address, contact);
+		if(mInvoice.isCreditMemo()) {
+			ublCreditNote.setBuyer(buyerName, address, contact);
+		} else {
+			ublInvoice.setBuyer(buyerName, address, contact);
+		}
 		LOG.info("finished.");
 	}
 
@@ -321,14 +361,22 @@ WHERE (M_InOut.MovementType IN ('C-'))
 				) {
 			PaymentMeansCode paymentMeansCode = PaymentMeansCode.CreditTransfer;
 			IBANId iban = new IBANId(mBankAccount.getIBAN());
-			ublInvoice.addPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck"); // TODO
+			if(mInvoice.isCreditMemo()) {
+				ublCreditNote.addPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck"); // TODO
+			} else {
+				ublInvoice.addPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck"); // TODO
+			}
 		} else {
 			LOG.warning("TODO PaymentMeansCode: mInvoice.PaymentRule="+mInvoice.getPaymentRule());
 		}
 
 		MPaymentTerm mPaymentTerm = new MPaymentTerm(Env.getCtx(), mInvoice.getC_PaymentTerm_ID(), get_TrxName());
 //		ublInvoice.addPaymentTerms("#SKONTO#TAGE=7#PROZENT=2.00#"); // TODO
-		ublInvoice.addPaymentTerms(mPaymentTerm.getName());
+		if(mInvoice.isCreditMemo()) {
+			ublCreditNote.addPaymentTerms(mPaymentTerm.getName());
+		} else {
+			ublInvoice.addPaymentTerms(mPaymentTerm.getName());
+		}
 		LOG.info("finished.");
 	}
 
@@ -342,12 +390,21 @@ WHERE (M_InOut.MovementType IN ('C-'))
 			taxBaseAmt = taxBaseAmt.add(mInvoiceTax.getTaxBaseAmt());
 			taxAmt = taxAmt.add(mInvoiceTax.getTaxAmt());
 		}
-		ublInvoice.setDocumentTotals(new Amount(mInvoice.getCurrencyISO(), mInvoice.getTotalLines()) // lineExtension
-				, new Amount(mInvoice.getCurrencyISO(), taxBaseAmt) // taxExclusive
-				, new Amount(mInvoice.getCurrencyISO(), taxBaseAmt.add(taxAmt)) // taxInclusive
-				, new Amount(mInvoice.getCurrencyISO(), mInvoice.getGrandTotal()) // payable
-				);
-		ublInvoice.setInvoiceTax(new Amount(mInvoice.getCurrencyISO(), taxAmt));
+		if(mInvoice.isCreditMemo()) {
+			ublCreditNote.setDocumentTotals(new Amount(mInvoice.getCurrencyISO(), mInvoice.getTotalLines()) // lineExtension
+					, new Amount(mInvoice.getCurrencyISO(), taxBaseAmt) // taxExclusive
+					, new Amount(mInvoice.getCurrencyISO(), taxBaseAmt.add(taxAmt)) // taxInclusive
+					, new Amount(mInvoice.getCurrencyISO(), mInvoice.getGrandTotal()) // payable
+					);
+			ublCreditNote.setInvoiceTax(new Amount(mInvoice.getCurrencyISO(), taxAmt));
+		} else {
+			ublInvoice.setDocumentTotals(new Amount(mInvoice.getCurrencyISO(), mInvoice.getTotalLines()) // lineExtension
+					, new Amount(mInvoice.getCurrencyISO(), taxBaseAmt) // taxExclusive
+					, new Amount(mInvoice.getCurrencyISO(), taxBaseAmt.add(taxAmt)) // taxInclusive
+					, new Amount(mInvoice.getCurrencyISO(), mInvoice.getGrandTotal()) // payable
+					);
+			ublInvoice.setInvoiceTax(new Amount(mInvoice.getCurrencyISO(), taxAmt));
+		}
 		LOG.info("finished.");
 	}
 
@@ -361,10 +418,17 @@ WHERE (M_InOut.MovementType IN ('C-'))
 			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
 			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
 			LOG.info("vatCategory:" +vatCategory);
-			ublInvoice.addVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt())
-					, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt())
-					, vatCategory   // TODO mehr als eine mappen
-					);
+			if(mInvoice.isCreditMemo()) {
+				ublCreditNote.addVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt())
+						, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt())
+						, vatCategory   // TODO mehr als eine mappen
+						);
+			} else {
+				ublInvoice.addVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt())
+						, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt())
+						, vatCategory   // TODO mehr als eine mappen
+						);
+			}
 		});
 		LOG.info("finished. "+taxes.size() + " vatBreakDowns.");
 	}
@@ -380,15 +444,27 @@ WHERE (M_InOut.MovementType IN ('C-'))
 			} else {
 				BigDecimal taxRate = invoiceLine.getC_Tax().getRate().setScale(SCALE, RoundingMode.HALF_UP);
 				VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
-				InvoiceLine line = new InvoiceLine(Integer.toString(lineId)
-						, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
-						, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
-						, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
-						, invoiceLine.getProduct().getName()
-						, vatCategory
-						);
-				line.addItemDescription(invoiceLine.getDescription());
-				ublInvoice.addInvoiceLine(line);		
+				if(mInvoice.isCreditMemo()) {
+					CreditNoteLine line = new CreditNoteLine(Integer.toString(lineId)
+							, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
+							, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
+							, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
+							, invoiceLine.getProduct().getName()
+							, vatCategory
+							);
+					line.addItemDescription(invoiceLine.getDescription());
+					ublCreditNote.addLine(line);		
+				} else {
+					InvoiceLine line = new InvoiceLine(Integer.toString(lineId)
+							, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
+							, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
+							, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
+							, invoiceLine.getProduct().getName()
+							, vatCategory
+							);
+					line.addItemDescription(invoiceLine.getDescription());
+					ublInvoice.addLine(line);		
+				}
 			}
 		});
 		LOG.info("finished. "+invoiceLines.size() + " lines.");
@@ -396,14 +472,28 @@ WHERE (M_InOut.MovementType IN ('C-'))
 
 	// TODO: idee mInvoice.get_xmlDocument ... für xRechnung nutzen!!!!
 	public byte[] toUbl(MInvoice mInvoice) {
-		String docBaseType = mInvoice.getC_DocTypeTarget().getDocBaseType();
-		if(X_C_DocType.DOCBASETYPE_ARInvoice.equals(docBaseType)) { // "ARI Accounts Receivable Invoice"/Ausgangsrechnung
+		if(mInvoice.isCreditMemo()) {
+			transformer = UblCreditNoteTransformer.getInstance();
+			makeCreditNote(mInvoice);
+			return transformer.fromModel(ublCreditNote);			
+		} else {
+			transformer = UblInvoiceTransformer.getInstance();
 			makeInvoice(mInvoice);
 			return transformer.fromModel(ublInvoice);			
-		} else {
-			LOG.info("docBaseType='"+docBaseType + "' for "+mInvoice);
 		}
-		return null;
+//		String docBaseType = mInvoice.getC_DocTypeTarget().getDocBaseType();
+//		if(X_C_DocType.DOCBASETYPE_ARInvoice.equals(docBaseType)) { // "ARI Accounts Receivable Invoice"/Ausgangsrechnung
+//			transformer = UblInvoiceTransformer.getInstance();
+//			makeInvoice(mInvoice);
+//			return transformer.fromModel(ublInvoice);			
+//		} else if(X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docBaseType))  { // "ARC Accounts Receivable Credit Memo"/Gutschrift
+//			transformer = UblCreditNoteTransformer.getInstance();
+//			makeCreditNote(mInvoice);
+//			return transformer.fromModel(ublCreditNote);			
+//		} else { 
+//			LOG.info("docBaseType='"+docBaseType + "' for "+mInvoice);
+//		}
+//		return null;
 	}
 
 }

@@ -13,6 +13,6 @@
 	<classpathentry kind="lib" path="/e-invoice/src/test/lib/Saxon-HE-9.9.1-1.jar"/>
 	<classpathentry kind="lib" path="/e-invoice/src/test/lib/slf4j-api-1.7.25.jar"/>
 	<classpathentry kind="lib" path="/e-invoice/src/test/lib/slf4j-simple-1.7.25.jar"/>
-	<classpathentry kind="lib" path="/e-invoice/de.klst.facturx-0.0.4.jar"/>
+	<classpathentry kind="lib" path="/e-invoice/de.klst.facturx-0.0.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
