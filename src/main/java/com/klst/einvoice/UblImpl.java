@@ -25,12 +25,9 @@ import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MPaymentTerm;
 import org.compiere.model.MUser;
-import org.compiere.model.X_C_DocType;
-import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.klst.marshaller.AbstactTransformer;
 import com.klst.marshaller.UblCreditNoteTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
 import com.klst.ubl.AdditionalSupportingDocument;
@@ -51,32 +48,18 @@ import com.klst.un.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
-import com.klst.xrechnung.UblInvoice;
 
-public class UblInvoice extends SvrProcess {
+public class UblImpl extends Einvoice {
 
-	private static final Logger LOG = Logger.getLogger(UblInvoice.class.getName());
+	private static final Logger LOG = Logger.getLogger(UblImpl.class.getName());
 	private static final String XRECHNUNG_12 = "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2";
 
-	protected AbstactTransformer transformer; // ein Singleton
-	protected MInvoice mInvoice; // from AD object
 	protected Invoice ublInvoice; // to UBL object
 	protected CreditNote ublCreditNote; // to UBL object
 	
 	// ctor
-	public UblInvoice() {
+	public UblImpl() {
 		super();
-	}
-
-	@Override
-	protected void prepare() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	protected String doIt() throws Exception {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public String getDocumentNo() {
@@ -474,29 +457,27 @@ WHERE (M_InOut.MovementType IN ('C-'))
 	}
 
 	// TODO: idee mInvoice.get_xmlDocument ... für xRechnung nutzen!!!!
-	public byte[] toUbl(MInvoice mInvoice) {
-		if(mInvoice.isCreditMemo()) {
+
+	@Override
+	public void setupTransformer(boolean isCreditNote) {
+		if(isCreditNote) {
 			transformer = UblCreditNoteTransformer.getInstance();
+		} else {
+			transformer = UblInvoiceTransformer.getInstance();
+		}
+	}
+
+	@Override
+	public byte[] tranformToXML(MInvoice mInvoice) {
+		boolean isCreditNote = mInvoice.isCreditMemo();
+		setupTransformer(isCreditNote);
+		if(isCreditNote) {
 			makeCreditNote(mInvoice);
 			return transformer.fromModel(ublCreditNote);			
 		} else {
-			transformer = UblInvoiceTransformer.getInstance();
 			makeInvoice(mInvoice);
 			return transformer.fromModel(ublInvoice);			
 		}
-//		String docBaseType = mInvoice.getC_DocTypeTarget().getDocBaseType();
-//		if(X_C_DocType.DOCBASETYPE_ARInvoice.equals(docBaseType)) { // "ARI Accounts Receivable Invoice"/Ausgangsrechnung
-//			transformer = UblInvoiceTransformer.getInstance();
-//			makeInvoice(mInvoice);
-//			return transformer.fromModel(ublInvoice);			
-//		} else if(X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docBaseType))  { // "ARC Accounts Receivable Credit Memo"/Gutschrift
-//			transformer = UblCreditNoteTransformer.getInstance();
-//			makeCreditNote(mInvoice);
-//			return transformer.fromModel(ublCreditNote);			
-//		} else { 
-//			LOG.info("docBaseType='"+docBaseType + "' for "+mInvoice);
-//		}
-//		return null;
 	}
 
 }

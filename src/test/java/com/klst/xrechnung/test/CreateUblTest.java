@@ -25,7 +25,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.klst.einvoice.UblInvoice;
+import com.klst.einvoice.UblImpl;
 
 import de.kosit.validationtool.api.Check;
 import de.kosit.validationtool.api.CheckConfiguration;
@@ -200,11 +200,11 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 
 	@Test
 	public void test0() {
-		UblInvoice ublInvoice = new UblInvoice();
+		UblImpl ublInvoice = new UblImpl();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[0], ublInvoice.get_TrxName());
 		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
 		
-		byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
+		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
 //		assertNull(xmlBytes);
 		LOG.info("xml=\n"+new String(xmlBytes));
 		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
@@ -213,11 +213,11 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	
 	@Test
 	public void test1() {
-		UblInvoice ublInvoice = new UblInvoice();
+		UblImpl ublInvoice = new UblImpl();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, ublInvoice.get_TrxName());
 		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
 
-		byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
+		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
 		LOG.info("xml=\n"+new String(xmlBytes));
 		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 		assertTrue(check(xmlBytes));
@@ -226,10 +226,10 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	@Test
 	public void ubl() {
 		for (int i = 1; i < INVOICE_ID.length; i++) {
-			UblInvoice ublInvoice = new UblInvoice();
+			UblImpl ublInvoice = new UblImpl();
 			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], ublInvoice.get_TrxName());
 			LOG.info(mInvoice.toString());
-			byte[] xmlBytes = ublInvoice.toUbl(mInvoice);
+			byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
 			assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 			assertTrue(check(xmlBytes));
 		}
