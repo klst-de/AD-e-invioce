@@ -1,4 +1,4 @@
-package com.klst.xrechnung;
+package com.klst.einvoice;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -51,6 +51,7 @@ import com.klst.un.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
+import com.klst.xrechnung.UblInvoice;
 
 public class UblInvoice extends SvrProcess {
 
