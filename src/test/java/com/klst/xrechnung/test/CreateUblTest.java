@@ -1,7 +1,6 @@
 package com.klst.xrechnung.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
@@ -25,6 +24,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.klst.einvoice.CiiImpl;
+import com.klst.einvoice.InterfaceEinvoice;
 import com.klst.einvoice.UblImpl;
 
 import de.kosit.validationtool.api.Check;
@@ -198,6 +199,31 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	    return sb.toString();
 	}
 
+	private Document syntaxTest(String xmlSchema, MInvoice mInvoice) {
+		Document document = null;
+		try
+		{
+			InterfaceEinvoice eInvoice = null;
+			if(xmlSchema.equals(InterfaceEinvoice.UBL_SCHEMA_NAME)) {
+// xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2 http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd">
+// <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2</cbc:CustomizationID>
+				eInvoice = new UblImpl();
+			} else if(xmlSchema.equals(InterfaceEinvoice.CII_SCHEMA_NAME)) {
+// xsi:schemaLocation="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100 ../../../schemas/UN_CEFACT/CrossIndustryInvoice_100pD16B.xsd">
+//              <ram:ID>urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2</ram:ID>
+				eInvoice = new CiiImpl();
+			}
+			byte[] xmlData = eInvoice.tranformToXML(mInvoice);
+			document = eInvoice.tranformToDomDocument(xmlData);
+		}
+		catch (Exception e)
+		{
+//			log.log(Level.SEVERE, "", e);
+			LOG.severe(e.getMessage());
+		}
+		return document;
+	}
+	
 	@Test
 	public void test0() {
 		UblImpl ublInvoice = new UblImpl();
@@ -209,9 +235,31 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		LOG.info("xml=\n"+new String(xmlBytes));
 		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 		assertTrue(check(xmlBytes));
+		
+		try {
+			org.w3c.dom.Document doc = ublInvoice.tranformToDomDocument(xmlBytes);
+			LOG.info("DocumentURI:"+doc.getDocumentURI());
+			LOG.info("BaseURI:"+doc.getBaseURI());
+			LOG.info("NamespaceURI:"+doc.getNamespaceURI());
+			LOG.info("XmlVersion:"+doc.getXmlVersion());
+			LOG.info("NodeType:"+doc.getNodeType()); // DOCUMENT_NODE             = 9;
+			LOG.info("ChildNode#:"+doc.getChildNodes().getLength());
+			Node node = doc.getFirstChild();
+			if(node!=null) {
+//				LOG.info("FirstChild:"+node);
+				NodeList nodeList = node.getChildNodes();
+				for(int i=0; i<nodeList.getLength(); i++) {
+//					LOG.info("Child "+i + ":"+nodeList.item(i));
+				}
+				LOG.info("FirstChild:"+node+" has "+nodeList.getLength()+" childs.");
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	@Test
+//	@Test
 	public void test1() {
 		UblImpl ublInvoice = new UblImpl();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, ublInvoice.get_TrxName());

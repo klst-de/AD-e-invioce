@@ -1,5 +1,6 @@
 package com.klst.einvoice;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
@@ -10,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -27,6 +31,7 @@ import org.compiere.model.MPaymentTerm;
 import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.w3c.dom.Document;
 
 import com.klst.marshaller.UblCreditNoteTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
@@ -131,10 +136,6 @@ public class UblImpl extends Einvoice {
 	 */
 	// overwrite this to set optional elements
 	protected void makeOptionals() {
-//		ublInvoice.setTaxCurrencyCode(mInvoice.getC_Currency().getISO_Code()); // setTaxCurrencyCode ist nicht implementiert
-		
-//		ublInvoice.setDueDate(aTimestamp);
-		
 		// Description ==> optional INVOICE NOTE
 		String description = mInvoice.getDescription();
 		if(description!=null) {
@@ -151,21 +152,6 @@ public class UblImpl extends Einvoice {
 		}
 		
 		//  LS -> DELIVERY : 
-/* minout Kandidaten @see GridTable.createSelectSql SELECT * FROM C_Invoice WHERE C_Invoice_ID=1051476;
-SELECT * FROM M_InOut 
-WHERE (M_InOut.MovementType IN ('C-')) 
-  AND  ((C_Invoice_ID=1051476 AND IsSOTrx='Y') -- LS mit RE
-         OR M_InOut_ID IN (
-  SELECT m.M_InOut_ID from M_InOut m
-    LEFT JOIN M_InOutline ml ON ml.M_InOut_ID = m.M_InOut_ID
-    LEFT JOIN c_invoiceline il ON il.M_InOutline_ID = ml.M_InOutline_ID
-  where il.C_Invoice_ID=1051476 AND m.MovementType IN ('C-')
-))
-  AND M_InOut.AD_Client_ID IN(0,1000000) 
-  AND M_InOut.AD_Org_ID IN(0,1000000,1000001,1000002) 
-  AND (M_InOut.M_InOut_ID IS NULL OR M_InOut.M_InOut_ID NOT IN ( SELECT Record_ID FROM AD_Private_Access WHERE AD_Table_ID = 319 AND AD_User_ID <> 1000016 AND IsActive = 'Y' ))
-
- */
 		final String subselect = "SELECT m.M_InOut_ID FROM M_InOut m"
 				+" LEFT JOIN M_InOutline ml ON ml.M_InOut_ID = m.M_InOut_ID"
 				+" LEFT JOIN c_invoiceline il ON il.M_InOutline_ID = ml.M_InOutline_ID"
@@ -176,7 +162,7 @@ WHERE (M_InOut.MovementType IN ('C-'))
 				+" AND (("+MInOut.COLUMNNAME_C_Invoice_ID + "= ? AND "+MInOut.COLUMNNAME_IsSOTrx+"='Y')"  // 1
 				+       " OR "+MInOut.COLUMNNAME_M_InOut_ID + " IN("+subselect+"))"
 				+" AND "+MInOut.COLUMNNAME_IsActive+"='Y'"; 
-		LOG.info("\n"+sql);
+//		LOG.info("\n"+sql);
 		PreparedStatement pstmt = DB.prepareStatement(sql, get_TrxName());
 		ResultSet rs = null;
 		List<MInOut> mInOutList = new ArrayList<MInOut>();
@@ -241,7 +227,7 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		}
 	}
 	
-	Invoice makeInvoice(MInvoice adInvoice) {
+	Object mapToEModel(MInvoice adInvoice) {
 		mInvoice = adInvoice;
 		ublInvoice = new CommercialInvoice(XRECHNUNG_12);
 		ublInvoice.setId(mInvoice.getDocumentNo());
@@ -262,7 +248,7 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		return ublInvoice;
 	}
 
-	CreditNote makeCreditNote(MInvoice adInvoice) { // TODO
+	Object mapToUblCreditNote(MInvoice adInvoice) { // TODO
 		mInvoice = adInvoice;
 		ublCreditNote = new CreditNote(XRECHNUNG_12, null, DocumentNameCode.CreditNote);
 		ublCreditNote.setId(mInvoice.getDocumentNo());
@@ -457,6 +443,15 @@ WHERE (M_InOut.MovementType IN ('C-'))
 	}
 
 	// TODO: idee mInvoice.get_xmlDocument ... für xRechnung nutzen!!!!
+	// ist in PO als public org.w3c.dom.Document get_xmlDocument(boolean noComment)
+	// @see https://stackoverflow.com/questions/21165871/how-to-convert-array-byte-to-org-w3c-dom-document
+	public Document tranformToDomDocument(byte[] xmlData) throws Exception {
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    factory.setNamespaceAware(true);
+	    DocumentBuilder builder = factory.newDocumentBuilder();
+	    return builder.parse(new ByteArrayInputStream(xmlData));
+	}
+	
 
 	@Override
 	public void setupTransformer(boolean isCreditNote) {
@@ -472,11 +467,9 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		boolean isCreditNote = mInvoice.isCreditMemo();
 		setupTransformer(isCreditNote);
 		if(isCreditNote) {
-			makeCreditNote(mInvoice);
-			return transformer.fromModel(ublCreditNote);			
+			return transformer.fromModel(mapToUblCreditNote(mInvoice));			
 		} else {
-			makeInvoice(mInvoice);
-			return transformer.fromModel(ublInvoice);			
+			return transformer.fromModel(mapToEModel(mInvoice));			
 		}
 	}
 
