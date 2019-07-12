@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -154,7 +155,7 @@ public class UblInvoice extends SvrProcess {
 		String description = mInvoice.getDescription();
 		if(description!=null) {
 //			ublInvoice.addNote("Es gelten unsere Allgem. Geschäftsbedingungen."); // Bsp	
-			ublInvoice.addNote(description);
+			ublInvoice.setNote(description);
 			
 			
 			// TODO raus nur Test AdditionalSupportingDocument
@@ -219,13 +220,14 @@ WHERE (M_InOut.MovementType IN ('C-'))
 //				int mUser_ID = mInOutList.get(0).getAD_User_ID();
 				
 				MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
-				String name = mBPartner.getName();
+				String shipToTradeName = mBPartner.getName();
 				Address address = mapLocationToAddress(mC_Location_ID);
 //				Contact contact = mapUserToContact(mUser_ID);
 //				address = null; // wg. UBL-CR-394 	warning
 //				contact = null; // wg. UBL-CR-398 	warning
 //				Party party = new Party(name, address, contact);
-				Party party = new Party(name, null, null);
+				Party party = new Party(null, null, null, null, null);
+				party.addName(shipToTradeName);
 				Delivery delivery = new Delivery(party);
 				delivery.setActualDate(mInOutList.get(0).getMovementDate());
 				delivery.setLocationAddress(address);
@@ -260,7 +262,7 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		ublInvoice = new CommercialInvoice(XRECHNUNG_12);
 		ublInvoice.setId(mInvoice.getDocumentNo());
 		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
-		ublInvoice.setDocumentCurrencyCode(mInvoice.getC_Currency().getISO_Code());
+		ublInvoice.setDocumentCurrency(mInvoice.getC_Currency().getISO_Code());
 		mapBuyerReference();
 
 		makeOptionals();
@@ -281,7 +283,7 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		ublCreditNote = new CreditNote(XRECHNUNG_12, null, DocumentNameCode.CreditNote);
 		ublCreditNote.setId(mInvoice.getDocumentNo());
 		ublCreditNote.setIssueDate(mInvoice.getDateInvoiced());
-		ublCreditNote.setDocumentCurrencyCode(mInvoice.getC_Currency().getISO_Code());
+		ublCreditNote.setDocumentCurrency(mInvoice.getC_Currency().getISO_Code());
 		mapBuyerReference();
 //
 //		makeOptionals();
@@ -362,9 +364,9 @@ WHERE (M_InOut.MovementType IN ('C-'))
 			PaymentMeansCode paymentMeansCode = PaymentMeansCode.CreditTransfer;
 			IBANId iban = new IBANId(mBankAccount.getIBAN());
 			if(mInvoice.isCreditMemo()) {
-				ublCreditNote.addPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck"); // TODO
+				ublCreditNote.setPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck", null); // TODO
 			} else {
-				ublInvoice.addPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck"); // TODO
+				ublInvoice.setPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck", null); // TODO
 			}
 		} else {
 			LOG.warning("TODO PaymentMeansCode: mInvoice.PaymentRule="+mInvoice.getPaymentRule());
@@ -373,9 +375,9 @@ WHERE (M_InOut.MovementType IN ('C-'))
 		MPaymentTerm mPaymentTerm = new MPaymentTerm(Env.getCtx(), mInvoice.getC_PaymentTerm_ID(), get_TrxName());
 //		ublInvoice.addPaymentTerms("#SKONTO#TAGE=7#PROZENT=2.00#"); // TODO
 		if(mInvoice.isCreditMemo()) {
-			ublCreditNote.addPaymentTerms(mPaymentTerm.getName());
+			ublCreditNote.setPaymentTermsAndDate(mPaymentTerm.getName(), (Timestamp)null);
 		} else {
-			ublInvoice.addPaymentTerms(mPaymentTerm.getName());
+			ublInvoice.setPaymentTermsAndDate(mPaymentTerm.getName(), (Timestamp)null);
 		}
 		LOG.info("finished.");
 	}
