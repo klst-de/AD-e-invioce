@@ -54,7 +54,7 @@ import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
-public class UblImpl extends Einvoice {
+public class UblImpl extends AbstractEinvoice {
 
 	private static final Logger LOG = Logger.getLogger(UblImpl.class.getName());
 	private static final String XRECHNUNG_12 = "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2";

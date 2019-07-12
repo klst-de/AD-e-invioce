@@ -4,7 +4,7 @@ import org.compiere.model.MInvoice;
 
 import com.klst.marshaller.CiiTransformer;
 
-public class CiiImpl extends Einvoice {
+public class CiiImpl extends AbstractEinvoice {
 
 	Object mapToInvoice(MInvoice adInvoice) {
 		return null; // TODO

@@ -11,7 +11,7 @@ import org.w3c.dom.Document;
 
 import com.klst.marshaller.AbstactTransformer;
 
-public abstract class Einvoice extends SvrProcess implements InterfaceEinvoice {
+public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEinvoice {
 
 	protected AbstactTransformer transformer; // Singleton
 	protected MInvoice mInvoice; // the source AD object
