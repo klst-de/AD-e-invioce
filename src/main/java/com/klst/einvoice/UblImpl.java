@@ -18,7 +18,6 @@ import com.klst.marshaller.UblCreditNoteTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
 import com.klst.ubl.Address;
 import com.klst.ubl.Contact;
-import com.klst.ubl.Invoice;
 import com.klst.ubl.VatCategory;
 import com.klst.un.unece.uncefact.Amount;
 import com.klst.un.unece.uncefact.IBANId;
@@ -28,9 +27,6 @@ public class UblImpl extends AbstractEinvoice {
 
 	private static final Logger LOG = Logger.getLogger(UblImpl.class.getName());
 
-//	protected Invoice ublInvoice; // to UBL object
-//	protected CreditNote ublCreditNote; // to UBL object
-//	Object ublObject;
 	private UblImpl delegate;
 	
 	// ctor
