@@ -259,7 +259,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		}
 	}
 	
-//	@Test
+	@Test
 	public void test1() {
 		UblImpl ublInvoice = new UblImpl();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, ublInvoice.get_TrxName());

@@ -6,7 +6,7 @@ import org.w3c.dom.Document;
 public interface InterfaceEinvoice {
 
 	// SysConfig key
-	public static final String XML_SCHEMA_NAME = "XML_SCHEMA_NAME";
+	public static final String XML_SCHEMA_NAME = "XML_EINVOICE_SCHEMA_NAME";
 	// Values for the key, a part of schemaLocation
 	public static final String UBL_SCHEMA_NAME = "os-UBL-2.1";
 	public static final String CII_SCHEMA_NAME = "CrossIndustryInvoice:100";
