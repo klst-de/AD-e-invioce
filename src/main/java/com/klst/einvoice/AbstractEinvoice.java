@@ -152,7 +152,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 			I_C_Tax tax = mInvoiceTax.getC_Tax(); // mapping
 			LOG.info(mInvoiceTax.toString() + " - " + tax);
 			BigDecimal taxRate = tax.getRate().setScale(SCALE, RoundingMode.HALF_UP);
-			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
+			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, new com.klst.ubl.Percent(taxRate));
 			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
 			LOG.info("vatCategory:" +vatCategory);
 			setVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount

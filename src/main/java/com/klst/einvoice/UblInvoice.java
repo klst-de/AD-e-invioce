@@ -87,15 +87,16 @@ public class UblInvoice extends UblImpl {
 
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
-		BigDecimal taxRate = invoiceLine.getC_Tax().getRate().setScale(SCALE, RoundingMode.HALF_UP);
-		VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
+		BigDecimal taxRate = invoiceLine.getC_Tax().getRate(); //.setScale(SCALE, RoundingMode.HALF_UP);
+//		VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
 		InvoiceLine line = new InvoiceLine(Integer.toString(lineId)
 				, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
 				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
 				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
 				, invoiceLine.getProduct().getName()
-				, vatCategory
+//				, vatCategory
 				);
+		line.setTaxCategoryAndRate(TaxCategoryCode.StandardRate, taxRate); // mandatory
 		line.addItemDescription(invoiceLine.getDescription());
 		((Invoice)ublObject).addLine(line);		
 	}
