@@ -1,20 +1,19 @@
 package com.klst.einvoice;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 
-import com.klst.ubl.Address;
-import com.klst.ubl.Contact;
-import com.klst.ubl.CreditNote;
-import com.klst.ubl.CreditNoteLine;
-import com.klst.ubl.VatCategory;
-import com.klst.un.unece.uncefact.Amount;
-import com.klst.un.unece.uncefact.IBANId;
-import com.klst.un.unece.uncefact.UnitPriceAmount;
+import com.klst.einvoice.ubl.Address;
+import com.klst.einvoice.ubl.Contact;
+import com.klst.einvoice.ubl.CreditNote;
+import com.klst.einvoice.ubl.CreditNoteLine;
+import com.klst.einvoice.ubl.VatCategory;
+import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.IBANId;
+import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
@@ -78,7 +77,7 @@ public class UblCreditNote extends UblImpl {
 				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
 				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
 				, invoiceLine.getProduct().getName()
-//				, vatCategory
+//				, TaxCategoryCode.StandardRate, taxRate
 				);
 		line.setTaxCategoryAndRate(TaxCategoryCode.StandardRate, taxRate); // mandatory
 		line.addItemDescription(invoiceLine.getDescription());

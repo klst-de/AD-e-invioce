@@ -22,10 +22,10 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
+import com.klst.einvoice.ubl.VatCategory;
+import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.Quantity;
 import com.klst.marshaller.AbstactTransformer;
-import com.klst.ubl.VatCategory;
-import com.klst.un.unece.uncefact.Amount;
-import com.klst.un.unece.uncefact.Quantity;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
 public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEinvoice {
@@ -152,7 +152,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 			I_C_Tax tax = mInvoiceTax.getC_Tax(); // mapping
 			LOG.info(mInvoiceTax.toString() + " - " + tax);
 			BigDecimal taxRate = tax.getRate().setScale(SCALE, RoundingMode.HALF_UP);
-			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, new com.klst.ubl.Percent(taxRate));
+			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, new com.klst.einvoice.ubl.Percent(taxRate));
 			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
 			LOG.info("vatCategory:" +vatCategory);
 			setVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount

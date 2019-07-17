@@ -16,11 +16,11 @@ import org.compiere.util.Env;
 
 import com.klst.marshaller.UblCreditNoteTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
-import com.klst.ubl.Address;
-import com.klst.ubl.Contact;
-import com.klst.ubl.VatCategory;
-import com.klst.un.unece.uncefact.Amount;
-import com.klst.un.unece.uncefact.IBANId;
+import com.klst.einvoice.ubl.Address;
+import com.klst.einvoice.ubl.Contact;
+import com.klst.einvoice.ubl.VatCategory;
+import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.untdid.codelist.PaymentMeansCode;
 
 public class UblImpl extends AbstractEinvoice {

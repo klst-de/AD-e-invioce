@@ -1,18 +1,23 @@
 package com.klst.einvoice;
 
+import java.math.BigDecimal;
+
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLocation;
 import org.compiere.model.MUser;
 import org.compiere.util.Env;
 
+import com.klst.einvoice.ubl.VatCategory;
+import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.CrossIndustryInvoice;
+import com.klst.einvoice.unece.uncefact.TradeAddress;
+import com.klst.einvoice.unece.uncefact.TradeContact;
+import com.klst.einvoice.unece.uncefact.TradeLineItem;
+import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.marshaller.CiiTransformer;
-import com.klst.ubl.VatCategory;
-import com.klst.un.unece.uncefact.Amount;
-import com.klst.un.unece.uncefact.CrossIndustryInvoice;
-import com.klst.un.unece.uncefact.TradeAddress;
-import com.klst.un.unece.uncefact.TradeContact;
 import com.klst.untdid.codelist.DocumentNameCode;
+import com.klst.untdid.codelist.TaxCategoryCode;
 
 public class CiiImpl extends AbstractEinvoice {
 
@@ -118,9 +123,18 @@ public class CiiImpl extends AbstractEinvoice {
 	}
 
 	@Override
-	void mapLine(MInvoiceLine line) {
-		// TODO Auto-generated method stub
-		
+	void mapLine(MInvoiceLine invoiceLine) {
+		int lineId = invoiceLine.getLine(); //Id
+		BigDecimal taxRate = invoiceLine.getC_Tax().getRate(); //.setScale(SCALE, RoundingMode.HALF_UP);
+		TradeLineItem line = new TradeLineItem(Integer.toString(lineId)
+				, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
+				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
+				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
+				, invoiceLine.getProduct().getName()
+				, TaxCategoryCode.StandardRate, taxRate
+				);
+		line.setDescription(invoiceLine.getDescription());
+		((CrossIndustryInvoice)ciiObject).addLine(line);		
 	}
 
 }

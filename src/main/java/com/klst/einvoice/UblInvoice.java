@@ -1,7 +1,6 @@
 package com.klst.einvoice;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,18 +16,18 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.klst.ubl.AdditionalSupportingDocument;
-import com.klst.ubl.Address;
-import com.klst.ubl.CommercialInvoice;
-import com.klst.ubl.Contact;
-import com.klst.ubl.Delivery;
-import com.klst.ubl.Invoice;
-import com.klst.ubl.InvoiceLine;
-import com.klst.ubl.Party;
-import com.klst.ubl.VatCategory;
-import com.klst.un.unece.uncefact.Amount;
-import com.klst.un.unece.uncefact.IBANId;
-import com.klst.un.unece.uncefact.UnitPriceAmount;
+import com.klst.einvoice.ubl.AdditionalSupportingDocument;
+import com.klst.einvoice.ubl.Address;
+import com.klst.einvoice.ubl.CommercialInvoice;
+import com.klst.einvoice.ubl.Contact;
+import com.klst.einvoice.ubl.Delivery;
+import com.klst.einvoice.ubl.Invoice;
+import com.klst.einvoice.ubl.InvoiceLine;
+import com.klst.einvoice.ubl.Party;
+import com.klst.einvoice.ubl.VatCategory;
+import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.IBANId;
+import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.PaymentMeansCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
@@ -87,17 +86,15 @@ public class UblInvoice extends UblImpl {
 
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
-		BigDecimal taxRate = invoiceLine.getC_Tax().getRate(); //.setScale(SCALE, RoundingMode.HALF_UP);
-//		VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
+		BigDecimal taxRate = invoiceLine.getC_Tax().getRate();
 		InvoiceLine line = new InvoiceLine(Integer.toString(lineId)
 				, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
 				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
 				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
 				, invoiceLine.getProduct().getName()
-//				, vatCategory
+				, TaxCategoryCode.StandardRate, taxRate
 				);
-		line.setTaxCategoryAndRate(TaxCategoryCode.StandardRate, taxRate); // mandatory
-		line.addItemDescription(invoiceLine.getDescription());
+		line.setDescription(invoiceLine.getDescription());
 		((Invoice)ublObject).addLine(line);		
 	}
 
