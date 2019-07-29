@@ -1,6 +1,8 @@
 package com.klst.einvoice;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.compiere.model.MBank;
@@ -16,12 +18,15 @@ import org.compiere.util.Env;
 
 import com.klst.marshaller.UblCreditNoteTransformer;
 import com.klst.marshaller.UblInvoiceTransformer;
+import com.klst.untdid.codelist.PaymentMeansEnum;
+import com.klst.untdid.codelist.TaxCategoryCode;
 import com.klst.einvoice.ubl.Address;
 import com.klst.einvoice.ubl.Contact;
+import com.klst.einvoice.ubl.VatBreakdown;
 import com.klst.einvoice.ubl.VatCategory;
 import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.IBANId;
-import com.klst.untdid.codelist.PaymentMeansCode;
 
 public class UblImpl extends AbstractEinvoice {
 
@@ -106,9 +111,24 @@ public class UblImpl extends AbstractEinvoice {
 		
 	}
 	
-	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
+	/*
+		ublInvoice.setPaymentInstructions(code, paymentMeansText, remittanceInformation
+				, creditTransfer, paymentCard, directDebit); // dd statt directDebit geht auch
+(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
+			, List<CreditTransfer> creditTransferList, PaymentCard paymentCard, DirectDebit directDebit)
+	 */
+	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
+			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
 		// TODO
 	}
+	
+	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) { // TODO nach oben und abstract
+		return null; // SEPA Überweisung	
+	}
+	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
+		return null; // non SEPA	
+	}
+	
 	void setPaymentTermsAndDate(String description, Timestamp ts) {
 		
 	}
@@ -126,9 +146,26 @@ public class UblImpl extends AbstractEinvoice {
 		if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit) 
 		|| mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit) 
 				) {
-			PaymentMeansCode paymentMeansCode = PaymentMeansCode.CreditTransfer;
 			IBANId iban = new IBANId(mBankAccount.getIBAN());
-			setPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck", null); // TODO
+			// PaymentMeansEnum.CreditTransfer;
+			String paymentMeansText = null; // paymentMeansText : Text zur Zahlungsart
+			String remittanceInformation = "TODO Verwendungszweck";
+			CreditTransfer sepa = createCreditTransfer(iban, null, null);
+			setPaymentInstructions(PaymentMeansEnum.CreditTransfer, null, remittanceInformation, sepa , null , null);
+/*
+		ublInvoice.setPaymentInstructions(code, paymentMeansText, remittanceInformation
+				, creditTransfer, paymentCard, directDebit); // dd statt directDebit geht auch
+				----------- TODO es ist noch nicht einheitlich!
+		       cii.setPaymentInstructions(testDoc.getPaymentMeansCode(), null, testDoc.getRemittanceInformation()
+		       ); //paymentMeansText, remittanceInformation);
+
+ */
+//			this.cr
+//			CreditTransfer ct = createCreditTransfer(iban, null, null);
+//			// ------------> raus:
+//			PaymentMeansCode paymentMeansCode = PaymentMeansCode.CreditTransfer;
+//			IBANId iban = new IBANId(mBankAccount.getIBAN());
+//			setPaymentInstructions(paymentMeansCode, iban, "TODO Verwendungszweck", null); // TODO
 		} else {
 			LOG.warning("TODO PaymentMeansCode: mInvoice.PaymentRule="+mInvoice.getPaymentRule());
 		}
@@ -159,11 +196,22 @@ public class UblImpl extends AbstractEinvoice {
 		
 	}
 
+//	@Override
+//	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
+//		// TODO Auto-generated method stub
+//		
+//	}
 	@Override
-	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
-		// TODO Auto-generated method stub
+	CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent) {
+		return new VatBreakdown(taxableAmount, taxAmount, codeEnum, percent);
+	}
+
+	@Override
+	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
+		// TODO Auto-generated method stub in Subklasse
 		
 	}
+
 
 	@Override
 	void mapLine(MInvoiceLine line) {

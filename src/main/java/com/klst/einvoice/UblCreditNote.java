@@ -10,12 +10,10 @@ import com.klst.einvoice.ubl.Address;
 import com.klst.einvoice.ubl.Contact;
 import com.klst.einvoice.ubl.CreditNote;
 import com.klst.einvoice.ubl.CreditNoteLine;
-import com.klst.einvoice.ubl.VatCategory;
 import com.klst.einvoice.unece.uncefact.Amount;
-import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.DocumentNameCode;
-import com.klst.untdid.codelist.PaymentMeansCode;
+import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
 public class UblCreditNote extends UblImpl {
@@ -32,8 +30,12 @@ public class UblCreditNote extends UblImpl {
 	}
 
 	@Override
-	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
-		((CreditNote)ublObject).setPaymentInstructions(paymentMeansCode, iban, remittanceInformation, accountName);
+//	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
+//		((CreditNote)ublObject).setPaymentInstructions(paymentMeansCode, iban, remittanceInformation, accountName);
+//	}
+	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
+			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
+		((CreditNote)ublObject).setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
 	}
 	
 	@Override
@@ -62,25 +64,28 @@ public class UblCreditNote extends UblImpl {
 		((CreditNote)ublObject).setInvoiceTax(taxTotal);
 	}
 	
+//	@Override
+//	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
+//		((CreditNote)ublObject).addVATBreakDown(taxableAmount, tax, vatCategory);
+////				, vatCategory   // TODO testen mehr als eine mappen
+//	}
+
 	@Override
-	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
-		((CreditNote)ublObject).addVATBreakDown(taxableAmount, tax, vatCategory);
-//				, vatCategory   // TODO testen mehr als eine mappen
+	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
+		((CreditNote)ublObject).addVATBreakDown(vatBreakdown);
 	}
-	
+ 
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
-		BigDecimal taxRate = invoiceLine.getC_Tax().getRate(); //.setScale(SCALE, RoundingMode.HALF_UP);
-//		VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, taxRate);
+		BigDecimal taxRate = invoiceLine.getC_Tax().getRate();
 		CreditNoteLine line = new CreditNoteLine(Integer.toString(lineId)
 				, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
 				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
 				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
 				, invoiceLine.getProduct().getName()
-//				, TaxCategoryCode.StandardRate, taxRate
+				, TaxCategoryCode.StandardRate, taxRate
 				);
-		line.setTaxCategoryAndRate(TaxCategoryCode.StandardRate, taxRate); // mandatory
-		line.addItemDescription(invoiceLine.getDescription());
+		line.setDescription(invoiceLine.getDescription());
 		((CreditNote)ublObject).addLine(line);		
 	}
 

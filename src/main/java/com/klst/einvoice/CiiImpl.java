@@ -15,6 +15,7 @@ import com.klst.einvoice.unece.uncefact.TradeAddress;
 import com.klst.einvoice.unece.uncefact.TradeContact;
 import com.klst.einvoice.unece.uncefact.TradeLineItem;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
+import com.klst.einvoice.unece.uncefact.VatBreakdown;
 import com.klst.marshaller.CiiTransformer;
 import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.TaxCategoryCode;
@@ -53,10 +54,15 @@ public class CiiImpl extends AbstractEinvoice {
 	}
 
 	@Override
-	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
-		// TODO Auto-generated method stub
-		
+	CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent) {
+		return new VatBreakdown(taxableAmount, taxAmount, codeEnum, percent);
 	}
+
+	@Override
+	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
+		((CrossIndustryInvoice)ciiObject).addVATBreakDown(vatBreakdown);
+	}
+
 
 	protected TradeAddress mapLocationToAddress(int location_ID) {
 		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
@@ -126,13 +132,14 @@ public class CiiImpl extends AbstractEinvoice {
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
 		BigDecimal taxRate = invoiceLine.getC_Tax().getRate(); //.setScale(SCALE, RoundingMode.HALF_UP);
-		TradeLineItem line = new TradeLineItem(Integer.toString(lineId)
-				, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
-				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
-				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
-				, invoiceLine.getProduct().getName()
-				, TaxCategoryCode.StandardRate, taxRate
-				);
+    	CoreInvoiceLine line = new TradeLineItem
+    			( Integer.toString(lineId)
+    			, mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
+    			, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
+    			, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
+    			, invoiceLine.getProduct().getName()
+    			, TaxCategoryCode.StandardRate, taxRate
+    			);
 		line.setDescription(invoiceLine.getDescription());
 		((CrossIndustryInvoice)ciiObject).addLine(line);		
 	}

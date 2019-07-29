@@ -22,7 +22,6 @@ import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
-import com.klst.einvoice.ubl.VatCategory;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.Quantity;
 import com.klst.marshaller.AbstactTransformer;
@@ -56,7 +55,9 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	abstract void setTotals(Amount lineExtension, Amount taxExclusive, Amount taxInclusive, Amount payable, Amount taxTotal);
 	abstract void mapByuer(String buyerName, int location_ID, int user_ID);
 	abstract void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyID, String companyLegalForm, String taxCompanyId);
-	abstract void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory);
+	abstract CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent);
+	abstract void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown);
+//	abstract void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory);
 	abstract void mapLine(MInvoiceLine line);
 
 	protected Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
@@ -145,20 +146,34 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 				);
 	}
 
+	
 	static final int SCALE = 2;
 	void mapVatBreakDownGroup() {
 		List<MInvoiceTax> taxes = Arrays.asList(mInvoice.getTaxes(true));
 		taxes.forEach(mInvoiceTax -> {
 			I_C_Tax tax = mInvoiceTax.getC_Tax(); // mapping
-			LOG.info(mInvoiceTax.toString() + " - " + tax);
-			BigDecimal taxRate = tax.getRate().setScale(SCALE, RoundingMode.HALF_UP);
-			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, new com.klst.einvoice.ubl.Percent(taxRate));
-			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
-			LOG.info("vatCategory:" +vatCategory);
-			setVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount
-						, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt()) // tax
-						, vatCategory   // TODO mehr als eine mappen
-						);
+//			LOG.info(mInvoiceTax.toString() + " - " + tax);
+//			BigDecimal taxRate = tax.getRate().setScale(SCALE, RoundingMode.HALF_UP);
+//			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, new com.klst.einvoice.ubl.Percent(taxRate));
+//			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
+//			LOG.info("vatCategory:" +vatCategory);
+/*
+        	CoreInvoiceVatBreakdown vatBreakdown = new VatBreakdown( new Amount(tradeTax.getBasisAmount().get(0).getValue())
+					,new Amount(tradeTax.getCalculatedAmount().get(0).getValue())
+					,TaxCategoryCode.valueOf(tradeTax.getCategoryCode())
+					,tradeTax.getRateApplicablePercent()==null ? null : tradeTax.getRateApplicablePercent().getValue()
+					);
+
+ */
+//			setVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount
+//						, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt()) // taxAmount
+//						, vatCategory   // TODO mehr als eine mappen
+//						);
+			CoreInvoiceVatBreakdown vatBreakdown = createVatBreakdown(
+					  new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount
+					, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt()) // taxAmount
+					, TaxCategoryCode.StandardRate, tax.getRate());
+			addVATBreakDown(vatBreakdown);
 		});
 		LOG.info("finished. "+taxes.size() + " vatBreakDowns.");
 	}

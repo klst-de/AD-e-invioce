@@ -24,11 +24,11 @@ import com.klst.einvoice.ubl.Delivery;
 import com.klst.einvoice.ubl.Invoice;
 import com.klst.einvoice.ubl.InvoiceLine;
 import com.klst.einvoice.ubl.Party;
-import com.klst.einvoice.ubl.VatCategory;
 import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
-import com.klst.untdid.codelist.PaymentMeansCode;
+import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
 public class UblInvoice extends UblImpl {
@@ -47,9 +47,20 @@ public class UblInvoice extends UblImpl {
 		((Invoice)ublObject).setBuyerReference(buyerReference);
 	}
 	
+//	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
+//		((Invoice)ublObject).setPaymentInstructions(paymentMeansCode, iban, remittanceInformation, accountName);
+//	}
 	@Override
-	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
-		((Invoice)ublObject).setPaymentInstructions(paymentMeansCode, iban, remittanceInformation, accountName);
+	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
+			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
+		((Invoice)ublObject).setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
+	}
+	
+	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
+		return ((Invoice)ublObject).createCreditTransfer(iban, accountName, bic);	
+	}
+	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
+		return ((Invoice)ublObject).createCreditTransfer(accountId, accountName, bic);	
 	}
 	
 	@Override
@@ -78,11 +89,21 @@ public class UblInvoice extends UblImpl {
 		((Invoice)ublObject).setInvoiceTax(taxTotal);
 	}
 
+//	@Override
+//	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
+//		((Invoice)ublObject).addVATBreakDown(taxableAmount, tax, vatCategory);
+////				, vatCategory   // TODO testen mehr als eine mappen
+//	}
+//	@Override
+//	CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent) {
+//		return new VatBreakdown(taxableAmount, taxAmount, codeEnum, percent);
+//	}
+
 	@Override
-	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
-		((Invoice)ublObject).addVATBreakDown(taxableAmount, tax, vatCategory);
-//				, vatCategory   // TODO testen mehr als eine mappen
+	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
+		((Invoice)ublObject).addVATBreakDown(vatBreakdown);
 	}
+
 
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
