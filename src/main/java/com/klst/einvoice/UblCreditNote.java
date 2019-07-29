@@ -30,9 +30,6 @@ public class UblCreditNote extends UblImpl {
 	}
 
 	@Override
-//	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
-//		((CreditNote)ublObject).setPaymentInstructions(paymentMeansCode, iban, remittanceInformation, accountName);
-//	}
 	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
 			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
 		((CreditNote)ublObject).setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
@@ -64,12 +61,6 @@ public class UblCreditNote extends UblImpl {
 		((CreditNote)ublObject).setInvoiceTax(taxTotal);
 	}
 	
-//	@Override
-//	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
-//		((CreditNote)ublObject).addVATBreakDown(taxableAmount, tax, vatCategory);
-////				, vatCategory   // TODO testen mehr als eine mappen
-//	}
-
 	@Override
 	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
 		((CreditNote)ublObject).addVATBreakDown(vatBreakdown);

@@ -25,8 +25,6 @@ import com.klst.einvoice.ubl.Invoice;
 import com.klst.einvoice.ubl.InvoiceLine;
 import com.klst.einvoice.ubl.Party;
 import com.klst.einvoice.unece.uncefact.Amount;
-import com.klst.einvoice.unece.uncefact.BICId;
-import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
@@ -56,12 +54,12 @@ public class UblInvoice extends UblImpl {
 		((Invoice)ublObject).setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
 	}
 	
-	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
-		return ((Invoice)ublObject).createCreditTransfer(iban, accountName, bic);	
-	}
-	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
-		return ((Invoice)ublObject).createCreditTransfer(accountId, accountName, bic);	
-	}
+//	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
+//		return ((Invoice)ublObject).createCreditTransfer(iban, accountName, bic);	
+//	}
+//	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
+//		return ((Invoice)ublObject).createCreditTransfer(accountId, accountName, bic);	
+//	}
 	
 	@Override
 	void setPaymentTermsAndDate(String description, Timestamp ts) {

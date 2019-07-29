@@ -2,7 +2,6 @@ package com.klst.einvoice;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -57,8 +56,10 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	abstract void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyID, String companyLegalForm, String taxCompanyId);
 	abstract CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent);
 	abstract void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown);
-//	abstract void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory);
 	abstract void mapLine(MInvoiceLine line);
+	// TODO: oder auch nicht
+//	abstract CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic);
+//	abstract CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic);
 
 	protected Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
 		if("PCE".equals(unitCode)) return new Quantity("EA", quantity);
@@ -147,28 +148,11 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	}
 
 	
-	static final int SCALE = 2;
+//	static final int SCALE = 2;
 	void mapVatBreakDownGroup() {
 		List<MInvoiceTax> taxes = Arrays.asList(mInvoice.getTaxes(true));
 		taxes.forEach(mInvoiceTax -> {
 			I_C_Tax tax = mInvoiceTax.getC_Tax(); // mapping
-//			LOG.info(mInvoiceTax.toString() + " - " + tax);
-//			BigDecimal taxRate = tax.getRate().setScale(SCALE, RoundingMode.HALF_UP);
-//			VatCategory vatCategory = new VatCategory(TaxCategoryCode.StandardRate, new com.klst.einvoice.ubl.Percent(taxRate));
-//			// die optionalen "VAT exemption reason text" und "VAT exemption reason code" TODO
-//			LOG.info("vatCategory:" +vatCategory);
-/*
-        	CoreInvoiceVatBreakdown vatBreakdown = new VatBreakdown( new Amount(tradeTax.getBasisAmount().get(0).getValue())
-					,new Amount(tradeTax.getCalculatedAmount().get(0).getValue())
-					,TaxCategoryCode.valueOf(tradeTax.getCategoryCode())
-					,tradeTax.getRateApplicablePercent()==null ? null : tradeTax.getRateApplicablePercent().getValue()
-					);
-
- */
-//			setVATBreakDown(new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount
-//						, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt()) // taxAmount
-//						, vatCategory   // TODO mehr als eine mappen
-//						);
 			CoreInvoiceVatBreakdown vatBreakdown = createVatBreakdown(
 					  new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxBaseAmt()) // taxableAmount
 					, new Amount(mInvoice.getCurrencyISO(), mInvoiceTax.getTaxAmt()) // taxAmount
