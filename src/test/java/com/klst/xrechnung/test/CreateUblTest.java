@@ -24,9 +24,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.klst.einvoice.CiiImpl;
-import com.klst.einvoice.InterfaceEinvoice;
-import com.klst.einvoice.UblImpl;
+import com.klst.adempiere.einvoice.CiiImpl;
+import com.klst.adempiere.einvoice.InterfaceEinvoice;
+import com.klst.adempiere.einvoice.UblImpl;
 
 import de.kosit.validationtool.api.Check;
 import de.kosit.validationtool.api.CheckConfiguration;

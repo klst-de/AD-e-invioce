@@ -1,4 +1,4 @@
-package com.klst.einvoice;
+package com.klst.adempiere.einvoice;
 
 import org.compiere.model.MInvoice;
 import org.w3c.dom.Document;

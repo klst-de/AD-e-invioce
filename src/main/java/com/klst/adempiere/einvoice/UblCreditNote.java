@@ -1,4 +1,4 @@
-package com.klst.einvoice;
+package com.klst.adempiere.einvoice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -6,6 +6,10 @@ import java.sql.Timestamp;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 
+import com.klst.einvoice.CoreInvoiceVatBreakdown;
+import com.klst.einvoice.CreditTransfer;
+import com.klst.einvoice.DirectDebit;
+import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.ubl.Address;
 import com.klst.einvoice.ubl.Contact;
 import com.klst.einvoice.ubl.CreditNote;

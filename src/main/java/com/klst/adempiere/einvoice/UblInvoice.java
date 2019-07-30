@@ -1,4 +1,4 @@
-package com.klst.einvoice;
+package com.klst.adempiere.einvoice;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -16,6 +16,10 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.klst.einvoice.CoreInvoiceVatBreakdown;
+import com.klst.einvoice.CreditTransfer;
+import com.klst.einvoice.DirectDebit;
+import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.ubl.AdditionalSupportingDocument;
 import com.klst.einvoice.ubl.Address;
 import com.klst.einvoice.ubl.CommercialInvoice;

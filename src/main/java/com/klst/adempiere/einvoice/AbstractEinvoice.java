@@ -1,4 +1,4 @@
-package com.klst.einvoice;
+package com.klst.adempiere.einvoice;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -27,6 +27,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
+import com.klst.einvoice.CoreInvoiceVatBreakdown;
+import com.klst.einvoice.CreditTransfer;
+import com.klst.einvoice.DirectDebit;
+import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.IBANId;
