@@ -9,7 +9,6 @@ import org.compiere.model.MLocation;
 import org.compiere.model.MUser;
 import org.compiere.util.Env;
 
-import com.klst.einvoice.ubl.VatCategory;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.CrossIndustryInvoice;
