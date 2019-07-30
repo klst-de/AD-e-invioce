@@ -39,9 +39,15 @@ public class CreateUblTest {
 
 	private static final Logger LOG = Logger.getLogger(CreateUblTest.class.getName());
 
+/* Kandidaten für SEPA Bankeinzug
+select * from c_bpartner where c_bpartner_id IN( select c_bpartner_id from c_bp_bankaccount where ad_client_id=1000000 and isactive='Y' and iban is not null)
+and isactive='Y' and isCustomer='Y'
+
+ */
 	private static int testindex;
 	private static final int[] INVOICE_ID = {
 			1052923 , // Gutschrift!
+			1051399 , // Beleg "26898" mit Bankeinzug BP IBAN / SEPA DirectDebit
 //			1000009 , // wg. pa !
 			1000045 , // wg. DA 
 //			1012810 , // wg. RO !
@@ -272,6 +278,18 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	}
 	   
 	@Test
+	public void testIBAN() {
+		UblImpl ublInvoice = new UblImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[1], ublInvoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
+	   
+//	@Test
 	public void ubl() {
 		for (int i = 1; i < INVOICE_ID.length; i++) {
 			UblImpl ublInvoice = new UblImpl();
