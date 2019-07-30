@@ -114,9 +114,10 @@ public class UblImpl extends AbstractEinvoice {
 		
 	}
 	
+	@Override
 	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
 			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
-		// TODO
+		// implemented in Subclass
 	}
 	
 	/*
@@ -124,10 +125,12 @@ public class UblImpl extends AbstractEinvoice {
 	 * @see com.klst.einvoice.AbstractEinvoice#createCreditTransfer(com.klst.einvoice.unece.uncefact.IBANId, java.lang.String, com.klst.einvoice.unece.uncefact.BICId)
 	 */
 	// SEPA Überweisung	
+	@Override
 	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
 		return new FinancialAccount(iban, accountName, bic); // TODO static factory method
 	}
 	// non SEPA
+	@Override
 	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
 		return new FinancialAccount(accountId, accountName, bic); 
 	}
@@ -144,65 +147,53 @@ public class UblImpl extends AbstractEinvoice {
 
 
 	void setPaymentTermsAndDate(String description, Timestamp ts) {
-		
+		// implemented in subclass
 	}
 	
-//	String iban;
-//	void getIBAN(String res, String iban) {
-//		res = iban;
+//	String getCusomerIBAN(int partnerId) {
+//		List<MBPBankAccount> mBPBankAccountList = MBPBankAccount.getByPartner(Env.getCtx(), partnerId);
+//		mBPBankAccountList.forEach(mBPBankAccount -> {
+//			LOG.info("DirectDebit:"+mBPBankAccount.isDirectDebit() + " IBAN="+mBPBankAccount.getIBAN() + " "+mBPBankAccount);
+//		});
+//		if(mBPBankAccountList.isEmpty()) return null;
+//		
+//		return mBPBankAccountList.get(0).getIBAN();
 //	}
-	String getDirectDebitIBAN(int partnerId) {
-//		final String sql = "SELECT *"
-//				+" FROM "+MBPBankAccount.Table_Name
-//				+" WHERE "+MBPBankAccount.COLUMNNAME_C_BPartner_ID+"=?"
-//				+" AND "+MBPBankAccount.COLUMNNAME_IsActive+"=?"; 
-//		MBPBankAccount mBPBankAccount = new ...
-		
-//		String iban = null;
-		List<MBPBankAccount> mBPBankAccountList = MBPBankAccount.getByPartner(Env.getCtx(), partnerId);
-		mBPBankAccountList.forEach(mBPBankAccount -> {
-			LOG.info("DirectDebit:"+mBPBankAccount.isDirectDebit() + " IBAN="+mBPBankAccount.getIBAN() + " "+mBPBankAccount);
-//			getIBAN(iban, mBPBankAccount.getIBAN());
-		});
-		if(mBPBankAccountList.isEmpty()) return null;
-		
-		return mBPBankAccountList.get(0).getIBAN();
-	}
-	
-	void makePaymentGroup() { // TODO nach oben und mit cii einheitlich
-		int mAD_Org_ID = mInvoice.getAD_Org_ID(); // get AccountId of the Seller, aka AD_Org_ID for CreditTransfer
-		MOrgInfo mOrgInfo = MOrgInfo.get(Env.getCtx(), mAD_Org_ID, get_TrxName());	
-		MBank mBank = new MBank(Env.getCtx(), mOrgInfo.getTransferBank_ID(), get_TrxName());
-		final String sql = "SELECT MIN("+MBankAccount.COLUMNNAME_C_BankAccount_ID+")"
-				+" FROM "+MBankAccount.Table_Name
-				+" WHERE "+MBankAccount.COLUMNNAME_C_Bank_ID+"=?"
-				+" AND "+MBankAccount.COLUMNNAME_IsActive+"=?"; 
-		int bankAccount_ID = DB.getSQLValueEx(get_TrxName(), sql, mOrgInfo.getTransferBank_ID(), true);
-		MBankAccount mBankAccount = new MBankAccount(Env.getCtx(), bankAccount_ID, get_TrxName());
-		
-		String ddIBAN = getDirectDebitIBAN(mInvoice.getC_BPartner_ID()); // IBAN of the customer		
-		
-		String remittanceInformation = "TODO Verwendungszweck";
-		if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit) 
-		|| mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit)) {
-			IBANId iban = new IBANId(mBankAccount.getIBAN());
-			String paymentMeansText = null; // paymentMeansText : Text zur Zahlungsart
-			CreditTransfer sepaCreditTransfer = createCreditTransfer(iban, null, null);
-			setPaymentInstructions(PaymentMeansEnum.CreditTransfer, null, remittanceInformation, sepaCreditTransfer, null, null);
-		} else if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit)) {
-			IBANId iban = new IBANId(ddIBAN);
-			String mandateID = null; // paymentMeansText : Text zur Zahlungsart
-			DirectDebit sepaDirectDebit = createDirectDebit(mandateID, null, iban);
-			setPaymentInstructions(PaymentMeansEnum.SEPADirectDebit, null, remittanceInformation, null, null, sepaDirectDebit);
-		} else {
-			LOG.warning("TODO PaymentMeansCode: mInvoice.PaymentRule="+mInvoice.getPaymentRule());
-		}
-
-		MPaymentTerm mPaymentTerm = new MPaymentTerm(Env.getCtx(), mInvoice.getC_PaymentTerm_ID(), get_TrxName());
-//		((Invoice)ublObject).addPaymentTerms("#SKONTO#TAGE=7#PROZENT=2.00#"); // TODO
-		setPaymentTermsAndDate(mPaymentTerm.getName(), (Timestamp)null); 
-		LOG.info("finished.");
-	}
+//	
+//	void makePaymentGroup() { // TODO nach oben und mit cii einheitlich
+//		int mAD_Org_ID = mInvoice.getAD_Org_ID(); // get AccountId of the Seller, aka AD_Org_ID for CreditTransfer
+//		MOrgInfo mOrgInfo = MOrgInfo.get(Env.getCtx(), mAD_Org_ID, get_TrxName());	
+//		MBank mBank = new MBank(Env.getCtx(), mOrgInfo.getTransferBank_ID(), get_TrxName());
+//		final String sql = "SELECT MIN("+MBankAccount.COLUMNNAME_C_BankAccount_ID+")"
+//				+" FROM "+MBankAccount.Table_Name
+//				+" WHERE "+MBankAccount.COLUMNNAME_C_Bank_ID+"=?"
+//				+" AND "+MBankAccount.COLUMNNAME_IsActive+"=?"; 
+//		int bankAccount_ID = DB.getSQLValueEx(get_TrxName(), sql, mOrgInfo.getTransferBank_ID(), true);
+//		MBankAccount mBankAccount = new MBankAccount(Env.getCtx(), bankAccount_ID, get_TrxName());
+//		
+//		String ddIBAN = getCusomerIBAN(mInvoice.getC_BPartner_ID()); // IBAN of the customer		
+//		
+//		String remittanceInformation = "TODO Verwendungszweck";
+//		if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit) 
+//		|| mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit)) {
+//			IBANId iban = new IBANId(mBankAccount.getIBAN());
+//			String paymentMeansText = null; // paymentMeansText : Text zur Zahlungsart
+//			CreditTransfer sepaCreditTransfer = createCreditTransfer(iban, null, null);
+//			setPaymentInstructions(PaymentMeansEnum.CreditTransfer, null, remittanceInformation, sepaCreditTransfer, null, null);
+//		} else if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit)) {
+//			IBANId iban = new IBANId(ddIBAN);
+//			String mandateID = null; // paymentMeansText : Text zur Zahlungsart
+//			DirectDebit sepaDirectDebit = createDirectDebit(mandateID, null, iban);
+//			setPaymentInstructions(PaymentMeansEnum.SEPADirectDebit, null, remittanceInformation, null, null, sepaDirectDebit);
+//		} else {
+//			LOG.warning("TODO PaymentMeansCode: mInvoice.PaymentRule="+mInvoice.getPaymentRule());
+//		}
+//
+//		MPaymentTerm mPaymentTerm = new MPaymentTerm(Env.getCtx(), mInvoice.getC_PaymentTerm_ID(), get_TrxName());
+////		((Invoice)ublObject).addPaymentTerms("#SKONTO#TAGE=7#PROZENT=2.00#"); // TODO
+//		setPaymentTermsAndDate(mPaymentTerm.getName(), (Timestamp)null); 
+//		LOG.info("finished.");
+//	}
 
 
 	@Override

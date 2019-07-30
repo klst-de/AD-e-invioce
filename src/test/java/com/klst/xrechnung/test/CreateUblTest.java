@@ -47,10 +47,11 @@ and isactive='Y' and isCustomer='Y'
 	private static int testindex;
 	private static final int[] INVOICE_ID = {
 			1052923 , // Gutschrift!
-			1051399 , // Beleg "26898" mit Bankeinzug BP IBAN / SEPA DirectDebit
+			1051631 , // Beleg "27012" mit Bankeinzug BP IBAN / SEPA DirectDebit
+//			1051399 , // Beleg "26898" mit Bankeinzug BP IBAN / SEPA DirectDebit : "Katalog 2019" liefert val-sch.1.1 	BR-S-05 	error
 //			1000009 , // wg. pa !
 			1000045 , // wg. DA 
-//			1012810 , // wg. RO !
+			1012810 , // wg. RO ==> https://github.com/klst-de/e-invoice/issues/6
 			1019117 , // wg. kg 
 			1031534 , // wg. p100
 			1032760 , // wg. m
@@ -278,7 +279,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	}
 	   
 	@Test
-	public void testIBAN() {
+	public void testSepaDirectDebit() {
 		UblImpl ublInvoice = new UblImpl();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[1], ublInvoice.get_TrxName());
 		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
@@ -289,7 +290,19 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-//	@Test
+	@Test
+	public void testRO_Rolle() {
+		UblImpl ublInvoice = new UblImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1012810, ublInvoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
+	   
+//	@Test 1012810
 	public void ubl() {
 		for (int i = 1; i < INVOICE_ID.length; i++) {
 			UblImpl ublInvoice = new UblImpl();

@@ -1,6 +1,7 @@
 package com.klst.einvoice;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -20,6 +21,7 @@ import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.einvoice.unece.uncefact.VatBreakdown;
 import com.klst.marshaller.CiiTransformer;
 import com.klst.untdid.codelist.DocumentNameCode;
+import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
 public class CiiImpl extends AbstractEinvoice {
@@ -47,6 +49,17 @@ public class CiiImpl extends AbstractEinvoice {
 	@Override
 	void setBuyerReference(String buyerReference) {
 		((CrossIndustryInvoice)ciiObject).setBuyerReference(buyerReference);
+	}
+
+	@Override
+	void setPaymentTermsAndDate(String description, Timestamp ts) {
+		((CrossIndustryInvoice)ciiObject).setPaymentTermsAndDate(description, ts);
+	}
+
+	@Override
+	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation,
+			CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
+		// TODO Auto-generated method stub	
 	}
 
 	@Override

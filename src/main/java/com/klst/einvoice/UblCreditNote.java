@@ -94,7 +94,7 @@ public class UblCreditNote extends UblImpl {
 		super.mapSellerGroup(); 
 		super.mapBuyerGroup();
 		
-		makePaymentGroup();
+		super.mapPaymentGroup();
 		super.mapDocumentTotals();
 		super.mapVatBreakDownGroup();
 		super.mapLineGroup();

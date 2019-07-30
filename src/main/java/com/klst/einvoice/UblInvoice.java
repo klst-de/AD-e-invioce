@@ -45,21 +45,11 @@ public class UblInvoice extends UblImpl {
 		((Invoice)ublObject).setBuyerReference(buyerReference);
 	}
 	
-//	void setPaymentInstructions(PaymentMeansCode paymentMeansCode, IBANId iban, String remittanceInformation, String accountName) {
-//		((Invoice)ublObject).setPaymentInstructions(paymentMeansCode, iban, remittanceInformation, accountName);
-//	}
 	@Override
 	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
 			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
 		((Invoice)ublObject).setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
 	}
-	
-//	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
-//		return ((Invoice)ublObject).createCreditTransfer(iban, accountName, bic);	
-//	}
-//	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
-//		return ((Invoice)ublObject).createCreditTransfer(accountId, accountName, bic);	
-//	}
 	
 	@Override
 	void setPaymentTermsAndDate(String description, Timestamp ts) {
@@ -87,21 +77,10 @@ public class UblInvoice extends UblImpl {
 		((Invoice)ublObject).setInvoiceTax(taxTotal);
 	}
 
-//	@Override
-//	void setVATBreakDown(Amount taxableAmount, Amount tax, VatCategory vatCategory) {
-//		((Invoice)ublObject).addVATBreakDown(taxableAmount, tax, vatCategory);
-////				, vatCategory   // TODO testen mehr als eine mappen
-//	}
-//	@Override
-//	CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent) {
-//		return new VatBreakdown(taxableAmount, taxAmount, codeEnum, percent);
-//	}
-
 	@Override
 	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
 		((Invoice)ublObject).addVATBreakDown(vatBreakdown);
 	}
-
 
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
@@ -131,7 +110,7 @@ public class UblInvoice extends UblImpl {
 		super.mapSellerGroup(); 
 		super.mapBuyerGroup();
 		
-		makePaymentGroup();
+		super.mapPaymentGroup();
 		super.mapDocumentTotals();
 		super.mapVatBreakDownGroup();
 		super.mapLineGroup();
