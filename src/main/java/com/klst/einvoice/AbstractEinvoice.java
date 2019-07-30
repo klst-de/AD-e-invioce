@@ -94,6 +94,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 		if("pa".equals(unitCode)) return new Quantity("XPA", quantity); 
 		if("PA".equals(unitCode)) return new Quantity("XPA", quantity); 
 		if("PK".equals(unitCode)) return new Quantity("XPK", quantity); 
+		if("RO".equals(unitCode)) return new Quantity("XRO", quantity); 
 		if("p100".equals(unitCode)) return new Quantity("CEN", quantity);
 		return new Quantity(unitCode, quantity);
 	}
