@@ -22,6 +22,8 @@ import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
 import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.BICId;
+import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.Quantity;
 import com.klst.marshaller.AbstactTransformer;
 import com.klst.untdid.codelist.TaxCategoryCode;
@@ -57,9 +59,19 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	abstract CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent);
 	abstract void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown);
 	abstract void mapLine(MInvoiceLine line);
-	// TODO: oder auch nicht
-//	abstract CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic);
-//	abstract CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic);
+	// factory methods
+	/**
+	 * @return Interface CreditTransfer
+	 * @see com.klst.einvoice.CreditTransferFactory
+	 */
+	abstract CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic);
+	abstract CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic);
+	/**
+	 * @return Interface DirectDebit
+	 * @see com.klst.einvoice.DirectDebitFactory
+	 */
+	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban);
+	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, String debitedAccountID);
 
 	protected Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
 		if("PCE".equals(unitCode)) return new Quantity("EA", quantity);
@@ -148,7 +160,6 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	}
 
 	
-//	static final int SCALE = 2;
 	void mapVatBreakDownGroup() {
 		List<MInvoiceTax> taxes = Arrays.asList(mInvoice.getTaxes(true));
 		taxes.forEach(mInvoiceTax -> {

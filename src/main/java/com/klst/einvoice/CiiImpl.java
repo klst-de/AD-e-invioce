@@ -10,7 +10,9 @@ import org.compiere.util.Env;
 
 import com.klst.einvoice.ubl.VatCategory;
 import com.klst.einvoice.unece.uncefact.Amount;
+import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.CrossIndustryInvoice;
+import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.TradeAddress;
 import com.klst.einvoice.unece.uncefact.TradeContact;
 import com.klst.einvoice.unece.uncefact.TradeLineItem;
@@ -142,6 +144,31 @@ public class CiiImpl extends AbstractEinvoice {
     			);
 		line.setDescription(invoiceLine.getDescription());
 		((CrossIndustryInvoice)ciiObject).addLine(line);		
+	}
+
+	// factory methods ----------------- TODO to be implemented in future
+	@Override
+	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, String debitedAccountID) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

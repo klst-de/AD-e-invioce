@@ -2,8 +2,11 @@ package com.klst.einvoice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBank;
 import org.compiere.model.MBankAccount;
 import org.compiere.model.MInvoice;
@@ -18,6 +21,7 @@ import org.compiere.util.Env;
 import com.klst.einvoice.ubl.Address;
 import com.klst.einvoice.ubl.Contact;
 import com.klst.einvoice.ubl.FinancialAccount;
+import com.klst.einvoice.ubl.PaymentMandate;
 import com.klst.einvoice.ubl.VatBreakdown;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
@@ -115,18 +119,58 @@ public class UblImpl extends AbstractEinvoice {
 		// TODO
 	}
 	
-	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) { // TODO nach oben und abstract
-		return new FinancialAccount(iban, accountName, bic); // SEPA Überweisung	
+	/*
+	 * (non-Javadoc)
+	 * @see com.klst.einvoice.AbstractEinvoice#createCreditTransfer(com.klst.einvoice.unece.uncefact.IBANId, java.lang.String, com.klst.einvoice.unece.uncefact.BICId)
+	 */
+	// SEPA Überweisung	
+	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
+		return new FinancialAccount(iban, accountName, bic); // TODO static factory method
 	}
+	// non SEPA
 	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
-		return new FinancialAccount(accountId, accountName, bic); // non SEPA	
+		return new FinancialAccount(accountId, accountName, bic); 
 	}
 	
+	@Override
+	DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban) {
+		return PaymentMandate.createDirectDebit(mandateID, bankAssignedCreditorID, iban);
+	}
+
+	@Override
+	DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, String debitedAccountID) {
+		return PaymentMandate.createDirectDebit(mandateID, bankAssignedCreditorID, debitedAccountID);
+	}
+
+
 	void setPaymentTermsAndDate(String description, Timestamp ts) {
 		
 	}
+	
+//	String iban;
+//	void getIBAN(String res, String iban) {
+//		res = iban;
+//	}
+	String getDirectDebitIBAN(int partnerId) {
+//		final String sql = "SELECT *"
+//				+" FROM "+MBPBankAccount.Table_Name
+//				+" WHERE "+MBPBankAccount.COLUMNNAME_C_BPartner_ID+"=?"
+//				+" AND "+MBPBankAccount.COLUMNNAME_IsActive+"=?"; 
+//		MBPBankAccount mBPBankAccount = new ...
+		
+//		String iban = null;
+		List<MBPBankAccount> mBPBankAccountList = MBPBankAccount.getByPartner(Env.getCtx(), partnerId);
+		mBPBankAccountList.forEach(mBPBankAccount -> {
+			LOG.info("DirectDebit:"+mBPBankAccount.isDirectDebit() + " IBAN="+mBPBankAccount.getIBAN() + " "+mBPBankAccount);
+//			getIBAN(iban, mBPBankAccount.getIBAN());
+		});
+		if(mBPBankAccountList.isEmpty()) return null;
+		
+		return mBPBankAccountList.get(0).getIBAN();
+	}
+	
 	void makePaymentGroup() { // TODO nach oben und mit cii einheitlich
-		int mAD_Org_ID = mInvoice.getAD_Org_ID();
+		int mAD_Org_ID = mInvoice.getAD_Org_ID(); // get AccountId of the Seller, aka AD_Org_ID for CreditTransfer
 		MOrgInfo mOrgInfo = MOrgInfo.get(Env.getCtx(), mAD_Org_ID, get_TrxName());	
 		MBank mBank = new MBank(Env.getCtx(), mOrgInfo.getTransferBank_ID(), get_TrxName());
 		final String sql = "SELECT MIN("+MBankAccount.COLUMNNAME_C_BankAccount_ID+")"
@@ -136,15 +180,20 @@ public class UblImpl extends AbstractEinvoice {
 		int bankAccount_ID = DB.getSQLValueEx(get_TrxName(), sql, mOrgInfo.getTransferBank_ID(), true);
 		MBankAccount mBankAccount = new MBankAccount(Env.getCtx(), bankAccount_ID, get_TrxName());
 		
+		String ddIBAN = getDirectDebitIBAN(mInvoice.getC_BPartner_ID()); // IBAN of the customer		
+		
+		String remittanceInformation = "TODO Verwendungszweck";
 		if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_OnCredit) 
-		|| mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit) 
-				) {
+		|| mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDeposit)) {
 			IBANId iban = new IBANId(mBankAccount.getIBAN());
-			// PaymentMeansEnum.CreditTransfer;
 			String paymentMeansText = null; // paymentMeansText : Text zur Zahlungsart
-			String remittanceInformation = "TODO Verwendungszweck";
-			CreditTransfer sepa = createCreditTransfer(iban, null, null);
-			setPaymentInstructions(PaymentMeansEnum.CreditTransfer, null, remittanceInformation, sepa , null , null);
+			CreditTransfer sepaCreditTransfer = createCreditTransfer(iban, null, null);
+			setPaymentInstructions(PaymentMeansEnum.CreditTransfer, null, remittanceInformation, sepaCreditTransfer, null, null);
+		} else if(mInvoice.getPaymentRule().equals(MInvoice.PAYMENTRULE_DirectDebit)) {
+			IBANId iban = new IBANId(ddIBAN);
+			String mandateID = null; // paymentMeansText : Text zur Zahlungsart
+			DirectDebit sepaDirectDebit = createDirectDebit(mandateID, null, iban);
+			setPaymentInstructions(PaymentMeansEnum.SEPADirectDebit, null, remittanceInformation, null, null, sepaDirectDebit);
 		} else {
 			LOG.warning("TODO PaymentMeansCode: mInvoice.PaymentRule="+mInvoice.getPaymentRule());
 		}
@@ -185,7 +234,6 @@ public class UblImpl extends AbstractEinvoice {
 		// TODO Auto-generated method stub in Subklasse
 		
 	}
-
 
 	@Override
 	void mapLine(MInvoiceLine line) {
