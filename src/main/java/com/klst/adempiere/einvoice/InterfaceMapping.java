@@ -2,8 +2,6 @@ package com.klst.adempiere.einvoice;
 
 import java.math.BigDecimal;
 
-import com.klst.einvoice.DirectDebit;
-import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.Quantity;
 
 // Proxy Subjekt-Interface: Der Klient/AbstractEinvoice hängt nur von dieser Abstraktion ab.
@@ -36,8 +34,4 @@ public interface InterfaceMapping {
 	
 	public String mapUoM(String unitCode);
 	
-/* factory:
-public InterfaceMapping createInterfaceMapping();
-public DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban);
- */
 }

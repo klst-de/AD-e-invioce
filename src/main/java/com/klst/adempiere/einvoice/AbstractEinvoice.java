@@ -4,9 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -36,7 +34,6 @@ import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.IBANId;
-import com.klst.einvoice.unece.uncefact.Quantity;
 import com.klst.marshaller.AbstactTransformer;
 import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
@@ -51,14 +48,10 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	protected MInvoice mInvoice; // the source AD object
 	
 	protected InterfaceMapping mapping;
-//	protected Map<Object,String> uomMap;
-//	
+
 	AbstractEinvoice() {
 		super();
 		mapping = createInterfaceMapping();
-//		uomMap = new HashMap<Object,String>();
-//		uomMap.put("PCE", "EA");
-//		uomMap.put("STK.", "EA"); // usw.
 	}
 	
 	/**
@@ -100,44 +93,9 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban);
 	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, String debitedAccountID);
 
-	// WizardTowerProxy proxy = new WizardTowerProxy(new IvoryTower()) --->
-	// Proxy gibt es in java !!!!
-//	ProxyMapping proxyMapping = new ProxyMapping(new RealMapping()); // wobei RealMapping eine unbekannte Klasse ist
-//	protected Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
-//		return proxyMapping.mapToQuantity(unitCode, quantity);
-//	}
-	
-	// factory
 	public InterfaceMapping createInterfaceMapping() {
-//		return this; // weil mapToQuantity hier impelemtiert ist
-		// ich kann auch einen anderen mapper zurückgeben
-		return new RealMapping();
+		return new RealMapping(); // TODO Proxy??? : new ProxyMapping(new RealMapping())
 	}
-//	protected String mapUoM(String unitCode) {
-//		return unitCode.toUpperCase();
-//	}
-//	/* default impementation
-//	 * 
-//	 * (non-Javadoc)
-//	 * @see com.klst.adempiere.einvoice.InterfaceMapping#mapToQuantity(java.lang.String, java.math.BigDecimal)
-//	 */
-//	@Override
-//	public Quantity mapToQuantity(String unitCode, BigDecimal quantity) {	
-//		InterfaceMapping mapping = createInterfaceMapping();
-//		if("PCE".equals(unitCode)) return new Quantity("EA", quantity);
-//		if("Stk.".equals(unitCode)) return new Quantity("EA", quantity);
-//		if("HR".equals(unitCode)) return new Quantity("HUR", quantity); // @see https://github.com/klst-de/e-invoice/issues/4
-//		if("DA".equals(unitCode)) return new Quantity("DAY", quantity);
-//		if("kg".equals(unitCode)) return new Quantity("KGM", quantity);
-//		if("m".equals(unitCode)) return new Quantity("MTR", quantity);
-////		if("pa".equals(unitCode)) return new Quantity("PA", quantity); // weder PA noch PK sind valid? ==> https://github.com/klst-de/e-invoice/issues/6
-//		if("pa".equals(unitCode)) return new Quantity("XPA", quantity); 
-//		if("PA".equals(unitCode)) return new Quantity("XPA", quantity); 
-//		if("PK".equals(unitCode)) return new Quantity("XPK", quantity); 
-//		if("RO".equals(unitCode)) return new Quantity("XRO", quantity); 
-//		if("p100".equals(unitCode)) return new Quantity("CEN", quantity);
-//		return new Quantity(unitCode, quantity);
-//	}
 	
 	// mapping POReference -> BuyerReference 
 	void mapBuyerReference() {

@@ -8,6 +8,15 @@ import com.klst.einvoice.unece.uncefact.Quantity;
 
 public class RealMapping implements InterfaceMapping {
 
+/* TODO
+ * diesen Inhalt nach Proxy / DefaultMapping verschieben
+ * hier factory mit return null;
+ * und in client den factory call
+ */
+//	static InterfaceMapping createInterfaceMapping() {
+//		return null;
+//	}
+
 	Map<Object,String> uomMap;
 	
 	RealMapping() {
