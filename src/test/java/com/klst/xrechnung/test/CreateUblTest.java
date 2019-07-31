@@ -302,7 +302,7 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-//	@Test 1012810
+	@Test
 	public void ubl() {
 		for (int i = 1; i < INVOICE_ID.length; i++) {
 			UblImpl ublInvoice = new UblImpl();
