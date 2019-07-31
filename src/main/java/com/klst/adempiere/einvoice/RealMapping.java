@@ -11,7 +11,8 @@ public class RealMapping implements InterfaceMapping {
 /* TODO
  * diesen Inhalt nach Proxy / DefaultMapping verschieben
  * hier factory mit return null;
- * und in client den factory call
+ * und in client/AbstractEinvoice den factory call mit: 
+ *                     return new ProxyMapping(RealMapping.createInterfaceMapping());
  */
 //	static InterfaceMapping createInterfaceMapping() {
 //		return null;
