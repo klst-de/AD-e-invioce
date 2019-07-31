@@ -307,8 +307,9 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		for (int i = 1; i < INVOICE_ID.length; i++) {
 			UblImpl ublInvoice = new UblImpl();
 			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], ublInvoice.get_TrxName());
-			LOG.info(mInvoice.toString());
+			LOG.info("---------------------- "+mInvoice.toString());
 			byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
+//			LOG.info("xml=\n"+new String(xmlBytes));
 			assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 			assertTrue(check(xmlBytes));
 		}

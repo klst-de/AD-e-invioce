@@ -98,6 +98,8 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	}
 	
 	// mapping POReference -> BuyerReference 
+	// TODO this.mapping.mapBuyerReference(mInvoice) returns String
+	// dann setBuyerReference(this.mapping.mapBuyerReference(mInvoice));
 	void mapBuyerReference() {
 		String mPOReference = mInvoice.getPOReference(); // kann null sein
 		if(mPOReference==null) {
@@ -142,7 +144,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	//         MBPartner.name -> Buyer.name     
 	//         Location       ->       Address
 	//         Contact        ->       Contact
-	void mapBuyerGroup() { // void makeBuyerGroup() {
+	void mapBuyerGroup() {
 		int mBP_ID = mInvoice.getC_BPartner_ID();
 		int location_ID = mInvoice.getC_BPartner_Location().getC_Location_ID();
 		int user_ID = mInvoice.getAD_User_ID();
@@ -246,9 +248,9 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 		// 
 		List<MInvoiceLine> invoiceLines = Arrays.asList(mInvoice.getLines());
 		invoiceLines.forEach(invoiceLine -> {
-			LOG.info(invoiceLine.toString());
+//			LOG.info(invoiceLine.toString());
 			if(BigDecimal.ZERO.compareTo(invoiceLine.getQtyInvoiced())==0) { 
-				// empty Line
+				LOG.info("empty Line "+invoiceLine.toString());
 			} else {
 				mapLine(invoiceLine);
 			}

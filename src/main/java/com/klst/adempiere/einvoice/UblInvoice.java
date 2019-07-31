@@ -150,7 +150,7 @@ public class UblInvoice extends UblImpl {
 		// Description ==> optional INVOICE NOTE
 		String description = mInvoice.getDescription();
 		if(description!=null) {
-//			((Invoice)ublObject).addNote("Es gelten unsere Allgem. Geschäftsbedingungen."); // Bsp	
+//			"Es gelten unsere Allgem. Geschäftsbedingungen." // Bsp	
 			((Invoice)ublObject).setNote(description);
 			
 			
@@ -192,7 +192,7 @@ public class UblInvoice extends UblImpl {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(mInOutList.size()==1) {
+		if(mInOutList.size()==1) { // TODO mehrere Lieferungengen
 			int mBP_ID = mInOutList.get(0).getC_BPartner_ID();
 			if(mBP_ID==mInvoice.getC_BPartner_ID()) {
 				LOG.info("!!!!!!!!!!!!!!!!!!!!!! kein Delivery! size="+mInOutList.size());
@@ -212,6 +212,7 @@ public class UblInvoice extends UblImpl {
 				Delivery delivery = new Delivery(party);
 				delivery.setActualDate(mInOutList.get(0).getMovementDate());
 				delivery.setLocationAddress(address);
+				LOG.info("delivery.ActualDate:"+delivery.getActualDate() + " address:"+address);
 				((Invoice)ublObject).addDelivery(delivery);
 			}
 		} else {
