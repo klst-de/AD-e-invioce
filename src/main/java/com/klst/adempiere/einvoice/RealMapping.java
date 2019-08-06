@@ -1,26 +1,14 @@
 package com.klst.adempiere.einvoice;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.klst.einvoice.unece.uncefact.Quantity;
-
-public class RealMapping implements InterfaceMapping {
-
-/* TODO
- * diesen Inhalt nach Proxy / DefaultMapping verschieben
- * hier factory mit return null;
- * und in client/AbstractEinvoice den factory call mit: 
- *                     return new ProxyMapping(RealMapping.createInterfaceMapping());
- */
-//	static InterfaceMapping createInterfaceMapping() {
-//		return null;
-//	}
+public class RealMapping extends DefaultMapping implements InterfaceMapping {
 
 	Map<Object,String> uomMap;
 	
 	RealMapping() {
+		super();
 		uomMap = new HashMap<Object,String>();
 		uomMap.put("PCE", 	"EA");	// piece/each
 		uomMap.put("STK.", 	"EA");	// piece/each (de)
@@ -34,10 +22,10 @@ public class RealMapping implements InterfaceMapping {
 		uomMap.put("P100", 	"CEN");	// %
 	}
 	
-	@Override
-	public Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
-		return new Quantity(mapUoM(unitCode), quantity);
-	}
+//	@Override
+//	public Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
+//		return super.mapToQuantity(unitCode, quantity);
+//	}
 
 	@Override
 	public String mapUoM(String unitCode) {

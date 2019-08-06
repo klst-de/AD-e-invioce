@@ -2,6 +2,8 @@ package com.klst.adempiere.einvoice;
 
 import java.math.BigDecimal;
 
+import org.compiere.model.MInvoice;
+
 import com.klst.einvoice.unece.uncefact.Quantity;
 
 // Proxy Subjekt-Interface: Der Klient/AbstractEinvoice hängt nur von dieser Abstraktion ab.
@@ -33,5 +35,14 @@ public interface InterfaceMapping {
 	public Quantity mapToQuantity(String unitCode, BigDecimal quantity);
 	
 	public String mapUoM(String unitCode);
+	
+	/**
+	 * Buyer reference BT-10 - An identifier assigned by the Buyer used for internal routing purposes.
+	 * Cardinality: 0..1 (optional), but mandatory due to BR-DE-15
+	 * 
+	 * @param mInvoice
+	 * @return identifier must not be null, because in some CIUS it is mandatory
+	 */
+	public String mapBuyerReference(MInvoice mInvoice);
 	
 }

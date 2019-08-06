@@ -51,7 +51,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 
 	AbstractEinvoice() {
 		super();
-		mapping = createInterfaceMapping();
+		mapping = createMapping();
 	}
 	
 	/**
@@ -93,24 +93,13 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban);
 	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, String debitedAccountID);
 
-	public InterfaceMapping createInterfaceMapping() {
-		return new RealMapping(); // TODO Proxy??? : new ProxyMapping(new RealMapping())
+	public InterfaceMapping createMapping() {
+		return new RealMapping();
 	}
 	
 	// mapping POReference -> BuyerReference 
-	// TODO this.mapping.mapBuyerReference(mInvoice) returns String
-	// dann setBuyerReference(this.mapping.mapBuyerReference(mInvoice));
 	void mapBuyerReference() {
-		String mPOReference = mInvoice.getPOReference(); // kann null sein
-		if(mPOReference==null) {
-			I_C_Order order = mInvoice.getC_Order();
-			if(order.getPOReference()==null) { // auch das kann null sein, dann 
-				mPOReference = "Order " +order.getDocumentNo() + ", DateOrdered " +order.getDateOrdered().toString().substring(0, 10);
-			} else {
-				mPOReference = order.getPOReference();
-			}
-		}
-		setBuyerReference(mPOReference);
+		setBuyerReference(mapping.mapBuyerReference(mInvoice));
 	}
 	
 	// mapping SellerGroup
