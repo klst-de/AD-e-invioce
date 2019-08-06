@@ -45,4 +45,13 @@ public interface InterfaceMapping {
 	 */
 	public String mapBuyerReference(MInvoice mInvoice);
 	
+	/**
+	 * optional Invoice note BT-22
+	 * 
+	 * @param mInvoice
+	 * @return Text can be null
+	 */
+	public String mapNote(MInvoice mInvoice);
+
+	
 }

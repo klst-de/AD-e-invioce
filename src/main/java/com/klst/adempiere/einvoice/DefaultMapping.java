@@ -34,4 +34,10 @@ public class DefaultMapping implements InterfaceMapping {
 		return mPOReference;
 	}
 
+	// Invoice note BT-22 is optional
+	@Override
+	public String mapNote(MInvoice mInvoice) {
+		return null;
+	}
+
 }

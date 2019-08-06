@@ -3,6 +3,8 @@ package com.klst.adempiere.einvoice;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.compiere.model.MInvoice;
+
 public class CustomizedMapping extends DefaultMapping implements InterfaceMapping {
 
 	Map<Object,String> uomMap;
@@ -22,17 +24,17 @@ public class CustomizedMapping extends DefaultMapping implements InterfaceMappin
 		uomMap.put("P100", 	"CEN");	// %
 	}
 	
-//	@Override
-//	public Quantity mapToQuantity(String unitCode, BigDecimal quantity) {
-//		return super.mapToQuantity(unitCode, quantity);
-//	}
-
 	@Override
 	public String mapUoM(String unitCode) {
 		if(unitCode==null) return null;
 		String key = unitCode.toUpperCase();
 		String value = uomMap.get(key);
 		return value==null ? key : value;
+	}
+
+	@Override
+	public String mapNote(MInvoice mInvoice) {
+		return mInvoice.getDescription();
 	}
 
 }

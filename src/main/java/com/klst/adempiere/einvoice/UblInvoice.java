@@ -148,19 +148,21 @@ public class UblInvoice extends UblImpl {
 	// overwrite this to set optional elements
 	protected void makeOptionals() {
 		// Description ==> optional INVOICE NOTE
-		String description = mInvoice.getDescription();
-		if(description!=null) {
-//			"Es gelten unsere Allgem. Geschäftsbedingungen." // Bsp	
-			((Invoice)ublObject).setNote(description);
-			
-			
-			// TODO raus nur Test AdditionalSupportingDocument
-			LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
-			AdditionalSupportingDocument asd = new AdditionalSupportingDocument("1","AdditionalSupportingDocument description");
-			asd.setExternalDocumentLocation("a URL TODO");
-			((Invoice)ublObject).addAdditionalSupportingDocument(asd);
-
-		}
+		((Invoice)ublObject).setNote(this.mapping.mapNote(mInvoice));
+		
+//		String description = mInvoice.getDescription();
+//		if(description!=null) {
+////			"Es gelten unsere Allgem. Geschäftsbedingungen." // Bsp	
+//			((Invoice)ublObject).setNote(description);
+//			
+//			
+//			// TODO raus nur Test AdditionalSupportingDocument
+//			LOG.info(">>>>>>>>>>>>>>>>>>>>>>>>>");
+//			AdditionalSupportingDocument asd = new AdditionalSupportingDocument("1","AdditionalSupportingDocument description");
+//			asd.setExternalDocumentLocation("a URL TODO");
+//			((Invoice)ublObject).addAdditionalSupportingDocument(asd);
+//
+//		}
 		
 		//  LS -> DELIVERY : 
 		final String subselect = "SELECT m.M_InOut_ID FROM M_InOut m"
