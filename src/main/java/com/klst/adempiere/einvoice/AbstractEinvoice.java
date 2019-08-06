@@ -94,7 +94,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	abstract DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, String debitedAccountID);
 
 	public InterfaceMapping createMapping() {
-		return new RealMapping();
+		return new CustomizedMapping();
 	}
 	
 	// mapping POReference -> BuyerReference 

@@ -3,11 +3,11 @@ package com.klst.adempiere.einvoice;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RealMapping extends DefaultMapping implements InterfaceMapping {
+public class CustomizedMapping extends DefaultMapping implements InterfaceMapping {
 
 	Map<Object,String> uomMap;
 	
-	RealMapping() {
+	CustomizedMapping() {
 		super();
 		uomMap = new HashMap<Object,String>();
 		uomMap.put("PCE", 	"EA");	// piece/each
