@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.MBPBankAccount;
 import org.compiere.model.MBPartner;
@@ -43,6 +42,24 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	private static final Logger LOG = Logger.getLogger(AbstractEinvoice.class.getName());
 	
 	static final String XRECHNUNG_12 = "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2";
+	
+	/**
+	 * factory method
+	 * 
+	 * @param schema
+	 * @return InterfaceEinvoice object
+	 */
+	static InterfaceEinvoice createEinvoice(String schema) {
+		if(schema.equals(InterfaceEinvoice.UBL_SCHEMA_NAME)) {
+			return new UblImpl();
+		} else if(schema.equals(InterfaceEinvoice.CII_SCHEMA_NAME)) {
+			return new CiiImpl();
+		} else {
+			LOG.warning("xmlSchema='" + schema+"'" + " error use "+InterfaceEinvoice.UBL_SCHEMA_NAME);
+			return null;
+		}
+		
+	}
 	
 	protected AbstactTransformer transformer; // Singleton
 	protected MInvoice mInvoice; // the source AD object
