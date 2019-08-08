@@ -49,7 +49,7 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 	 * @param schema
 	 * @return InterfaceEinvoice object
 	 */
-	static InterfaceEinvoice createEinvoice(String schema) {
+	static public InterfaceEinvoice createEinvoice(String schema) {
 		if(schema.equals(InterfaceEinvoice.UBL_SCHEMA_NAME)) {
 			return new UblImpl();
 		} else if(schema.equals(InterfaceEinvoice.CII_SCHEMA_NAME)) {
