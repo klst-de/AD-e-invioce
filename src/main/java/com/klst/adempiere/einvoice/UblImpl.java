@@ -71,10 +71,6 @@ public class UblImpl extends AbstractEinvoice {
 		return contact;
 	}
 
-	// TODO: idee mInvoice.get_xmlDocument ... für xRechnung nutzen!!!!
-	// ist in PO als public org.w3c.dom.Document get_xmlDocument(boolean noComment)
-	// nein ==> get_xmlDocument wird in PO.get_xmlString genutzt und das in HouseKeeping Process
-
 	@Override
 	public void setupTransformer(boolean isCreditNote) {
 		if(isCreditNote) {
