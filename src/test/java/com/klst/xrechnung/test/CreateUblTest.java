@@ -60,7 +60,8 @@ and isactive='Y' and isCustomer='Y'
 			1051335 ,
 			1053178 , // wg. HR
 			1051341 ,
-			1053453 }; // wg. Delivery und Beschreibung
+			1053563 , // Beleg 27916 wg. UTF-8 charset "Baseler Straße 2-4" https://github.com/adempiere/adempiere/issues/2701
+			1053453}; // Beleg 27861 wg. Delivery und Beschreibung
 	
 	private static Check check;
 	
@@ -70,7 +71,7 @@ and isactive='Y' and isCustomer='Y'
     public static void staticSetup() {
         LOG.info("startup - creating kosit validator");
         String userDir = System.getProperty("user.dir").replace('\\', '/');
-		String so = "file:"+userDir.substring(2, userDir.length())+"/../e-invoice/src/test/kositresources/1.2.0_2018-12-19/scenarios.xml";
+		String so = "file:"+userDir.substring(2, userDir.length())+"/../e-invoice/src/test/kositresources/1.2.1_2019-06-24/scenarios.xml";
 		URI scenarios =  URI.create(so); // so == ablsolte path
 		CheckConfiguration config = new CheckConfiguration(scenarios);
 		LOG.info("config.ScenarioDefinition:"+config.getScenarioDefinition() +
@@ -294,6 +295,18 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 	public void testRO_Rolle() {
 		UblImpl ublInvoice = new UblImpl();
 		MInvoice mInvoice = new MInvoice(adempiereCtx, 1012810, ublInvoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
+	   
+	@Test
+	public void testUTF8() {
+		UblImpl ublInvoice = new UblImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053563, ublInvoice.get_TrxName());
 		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
 
 		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);

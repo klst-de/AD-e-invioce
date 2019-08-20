@@ -20,7 +20,6 @@ import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
 import com.klst.einvoice.PaymentCard;
-import com.klst.einvoice.ubl.AdditionalSupportingDocument;
 import com.klst.einvoice.ubl.Address;
 import com.klst.einvoice.ubl.CommercialInvoice;
 import com.klst.einvoice.ubl.Contact;
@@ -72,7 +71,8 @@ public class UblInvoice extends UblImpl {
 		Address address = mapLocationToAddress(location_ID);
 		Contact contact = mapUserToContact(salesRep_ID);
 		((Invoice)ublObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
-		((Invoice)ublObject).setSellerTaxCompanyId(taxCompanyId);
+//		((Invoice)ublObject).setSellerTaxCompanyId(taxCompanyId); // deprecated
+		((Invoice)ublObject).getSellerParty().setTaxRegistrationId(taxCompanyId, "VAT");
 	}
 
 	@Override
@@ -210,7 +210,7 @@ public class UblInvoice extends UblImpl {
 //				contact = null; // wg. UBL-CR-398 	warning
 //				Party party = new Party(name, address, contact);
 				Party party = new Party(null, null, null, null, null);
-				party.addName(shipToTradeName);
+				party.setTradingBusinessName(shipToTradeName);
 				Delivery delivery = new Delivery(party);
 				delivery.setActualDate(mInOutList.get(0).getMovementDate());
 				delivery.setLocationAddress(address);

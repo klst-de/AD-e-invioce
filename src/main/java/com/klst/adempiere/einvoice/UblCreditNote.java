@@ -56,7 +56,7 @@ public class UblCreditNote extends UblImpl {
 		Address address = mapLocationToAddress(location_ID);
 		Contact contact = mapUserToContact(salesRep_ID);
 		((CreditNote)ublObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
-		((CreditNote)ublObject).setSellerTaxCompanyId(taxCompanyId);
+		((CreditNote)ublObject).getSellerParty().setTaxRegistrationId(taxCompanyId, "VAT");
 	}
 
 	@Override
