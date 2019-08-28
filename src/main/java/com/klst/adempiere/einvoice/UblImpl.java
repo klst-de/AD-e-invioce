@@ -13,9 +13,11 @@ import org.compiere.util.Env;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
+import com.klst.einvoice.IContact;
+import com.klst.einvoice.IContactFactory;
 import com.klst.einvoice.PaymentCard;
-import com.klst.einvoice.ubl.Address;
-import com.klst.einvoice.ubl.Contact;
+import com.klst.einvoice.PostalAddress;
+import com.klst.einvoice.PostalAddressFactory;
 import com.klst.einvoice.ubl.FinancialAccount;
 import com.klst.einvoice.ubl.PaymentMandate;
 import com.klst.einvoice.ubl.VatBreakdown;
@@ -44,7 +46,7 @@ public class UblImpl extends AbstractEinvoice {
 		return delegate.getDocumentNo();
 	}
 
-	protected Address mapLocationToAddress(int location_ID) {
+	protected PostalAddress mapLocationToAddress(int location_ID, PostalAddressFactory addressFactory) {
 		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
 		String countryCode = mLocation.getCountry().getCountryCode();
 		String postalCode = mLocation.getPostal();
@@ -54,21 +56,21 @@ public class UblImpl extends AbstractEinvoice {
 		String a2 = mLocation.getAddress2();
 		String a3 = mLocation.getAddress3();
 		String a4 = mLocation.getAddress4();
-		Address address = new Address(countryCode, postalCode, city, street);
+		
+		PostalAddress address = addressFactory.createAddress(countryCode, postalCode, city);
 		if(a1!=null) address.setAddressLine1(a1);
 		if(a2!=null) address.setAddressLine2(a2);
 		if(a3!=null) address.setAddressLine3(a3);
-		if(a4!=null) address.setAdditionalStreet(a4);
+//		if(a4!=null) address.setAdditionalStreet(a4); // TODO ??????????????????
 		return address;
 	}
 	
-	protected Contact mapUserToContact(int user_ID) {
+	protected IContact mapUserToContact(int user_ID, IContactFactory contactFactory) {
 		MUser mUser = new MUser(Env.getCtx(), user_ID, get_TrxName());
 		String contactName = mUser.getName();
 		String contactTel = mUser.getPhone();
 		String contactMail = mUser.getEMail();
-		Contact contact = new Contact(contactName, contactTel, contactMail);
-		return contact;
+		return contactFactory.createContact(contactName, contactTel, contactMail);
 	}
 
 	@Override

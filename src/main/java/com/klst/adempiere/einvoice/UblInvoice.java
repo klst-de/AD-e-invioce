@@ -19,10 +19,10 @@ import org.compiere.util.Env;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
+import com.klst.einvoice.IContact;
 import com.klst.einvoice.PaymentCard;
-import com.klst.einvoice.ubl.Address;
+import com.klst.einvoice.PostalAddress;
 import com.klst.einvoice.ubl.CommercialInvoice;
-import com.klst.einvoice.ubl.Contact;
 import com.klst.einvoice.ubl.Delivery;
 import com.klst.einvoice.ubl.Invoice;
 import com.klst.einvoice.ubl.InvoiceLine;
@@ -61,18 +61,24 @@ public class UblInvoice extends UblImpl {
 
 	@Override
 	void mapByuer(String buyerName, int location_ID, int user_ID) {
-		Address address = mapLocationToAddress(location_ID);
-		Contact contact = mapUserToContact(user_ID);
+		PostalAddress address = mapLocationToAddress(location_ID, ((Invoice)ublObject));
+		IContact contact = mapUserToContact(user_ID, (Invoice)ublObject);
 		((Invoice)ublObject).setBuyer(buyerName, address, contact);
+//		((Invoice)ublObject).getBuyerParty().setRegistrationName(buyerName); // TODO raus Flick wg registrationName im Party ctor
 	}
 
 	@Override
-	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyID, String companyLegalForm, String taxCompanyId) {
-		Address address = mapLocationToAddress(location_ID);
-		Contact contact = mapUserToContact(salesRep_ID);
-		((Invoice)ublObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
-//		((Invoice)ublObject).setSellerTaxCompanyId(taxCompanyId); // deprecated
-		((Invoice)ublObject).getSellerParty().setTaxRegistrationId(taxCompanyId, "VAT");
+	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyId, String companyLegalForm, String taxRegistrationId) {
+		PostalAddress address = mapLocationToAddress(location_ID, ((Invoice)ublObject));
+		IContact contact = mapUserToContact(salesRep_ID, (Invoice)ublObject);
+//		((Invoice)ublObject).setSeller(sellerName, address, contact, companyID, companyLegalForm); // TODO PartyFactory mit registrationName !!!!
+		Party party = new Party(sellerName, address, contact);
+//		party.setRegistrationName(sellerName);
+		party.setCompanyId(companyId);
+		party.setCompanyLegalForm(companyLegalForm);
+		party.setTaxRegistrationId(taxRegistrationId);
+//		((Invoice)ublObject).getSellerParty().setTaxRegistrationId(taxCompanyId);
+		((Invoice)ublObject).setSellerParty(party);
 	}
 
 	@Override
@@ -204,16 +210,16 @@ public class UblInvoice extends UblImpl {
 				
 				MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
 				String shipToTradeName = mBPartner.getName();
-				Address address = mapLocationToAddress(mC_Location_ID);
-//				Contact contact = mapUserToContact(mUser_ID);
-//				address = null; // wg. UBL-CR-394 	warning
-//				contact = null; // wg. UBL-CR-398 	warning
-//				Party party = new Party(name, address, contact);
-				Party party = new Party(null, null, null, null, null);
-				party.setTradingBusinessName(shipToTradeName);
-				Delivery delivery = new Delivery(party);
-				delivery.setActualDate(mInOutList.get(0).getMovementDate());
-				delivery.setLocationAddress(address);
+				PostalAddress address = mapLocationToAddress(mC_Location_ID, (Invoice)ublObject);
+////				Contact contact = mapUserToContact(mUser_ID);
+////				address = null; // wg. UBL-CR-394 	warning
+////				contact = null; // wg. UBL-CR-398 	warning
+////				Party party = new Party(name, address, contact);
+//				Party party = new Party(null, null, null, null, null);
+//				party.setTradingBusinessName(shipToTradeName);
+				Delivery delivery = new Delivery(shipToTradeName, mInOutList.get(0).getMovementDate(), address, null);
+//				delivery.setActualDate(mInOutList.get(0).getMovementDate());
+//				delivery.setLocationAddress(address);
 				LOG.info("delivery.ActualDate:"+delivery.getActualDate() + " address:"+address);
 				((Invoice)ublObject).addDelivery(delivery);
 			}
