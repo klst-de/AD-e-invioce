@@ -5,9 +5,6 @@ import java.sql.Timestamp;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MLocation;
-import org.compiere.model.MUser;
-import org.compiere.util.Env;
 
 import com.klst.einvoice.CoreInvoiceLine;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
@@ -16,13 +13,10 @@ import com.klst.einvoice.DirectDebit;
 import com.klst.einvoice.IContact;
 import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.PostalAddress;
-import com.klst.einvoice.ubl.Invoice;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.CrossIndustryInvoice;
 import com.klst.einvoice.unece.uncefact.IBANId;
-import com.klst.einvoice.unece.uncefact.TradeAddress;
-import com.klst.einvoice.unece.uncefact.TradeContact;
 import com.klst.einvoice.unece.uncefact.TradeLineItem;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.einvoice.unece.uncefact.VatBreakdown;

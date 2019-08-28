@@ -6,18 +6,11 @@ import java.util.logging.Logger;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MLocation;
-import org.compiere.model.MUser;
-import org.compiere.util.Env;
 
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
-import com.klst.einvoice.IContact;
-import com.klst.einvoice.IContactFactory;
 import com.klst.einvoice.PaymentCard;
-import com.klst.einvoice.PostalAddress;
-import com.klst.einvoice.PostalAddressFactory;
 import com.klst.einvoice.ubl.FinancialAccount;
 import com.klst.einvoice.ubl.PaymentMandate;
 import com.klst.einvoice.ubl.VatBreakdown;
