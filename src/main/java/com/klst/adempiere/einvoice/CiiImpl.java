@@ -13,7 +13,10 @@ import com.klst.einvoice.CoreInvoiceLine;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
+import com.klst.einvoice.IContact;
 import com.klst.einvoice.PaymentCard;
+import com.klst.einvoice.PostalAddress;
+import com.klst.einvoice.ubl.Invoice;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.CrossIndustryInvoice;
@@ -82,47 +85,18 @@ public class CiiImpl extends AbstractEinvoice {
 		((CrossIndustryInvoice)ciiObject).addVATBreakDown(vatBreakdown);
 	}
 
-
-	protected TradeAddress mapLocationToAddress(int location_ID) {
-		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
-		String countryCode = mLocation.getCountry().getCountryCode();
-		String postalCode = mLocation.getPostal();
-		String city = mLocation.getCity();
-		String street = null;
-		String a1 = mLocation.getAddress1();
-		String a2 = mLocation.getAddress2();
-		String a3 = mLocation.getAddress3();
-		String a4 = mLocation.getAddress4();
-		TradeAddress address = new TradeAddress(countryCode, postalCode, city, street);
-		if(a1!=null) address.setAddressLine1(a1);
-		if(a2!=null) address.setAddressLine2(a2);
-		if(a3!=null) address.setAddressLine3(a3);
-//		if(a4!=null) address.setAdditionalStreet(a4); // TODO ???????????
-		return address;
-	}
-	
-	protected TradeContact mapUserToContact(int user_ID) {
-		MUser mUser = new MUser(Env.getCtx(), user_ID, get_TrxName());
-		String contactName = mUser.getName();
-		String contactTel = mUser.getPhone();
-		String contactMail = mUser.getEMail();
-		TradeContact contact = new TradeContact(contactName, contactTel, contactMail);
-		return contact;
-	}
-
 	@Override
 	void mapByuer(String buyerName, int location_ID, int user_ID) {
-		TradeAddress address = mapLocationToAddress(location_ID);
-		TradeContact contact = mapUserToContact(user_ID);
+		PostalAddress address = mapLocationToAddress(location_ID, ((CrossIndustryInvoice)ciiObject));
+		IContact contact = mapUserToContact(user_ID, (CrossIndustryInvoice)ciiObject);
 		((CrossIndustryInvoice)ciiObject).setBuyer(buyerName, address, contact);
 	}
 	
 	@Override
 	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyID, String companyLegalForm, String taxCompanyId) {
-		TradeAddress address = mapLocationToAddress(location_ID);
-		TradeContact contact = mapUserToContact(salesRep_ID);
+		PostalAddress address = mapLocationToAddress(location_ID, ((CrossIndustryInvoice)ciiObject));
+		IContact contact = mapUserToContact(salesRep_ID, (CrossIndustryInvoice)ciiObject);
 		((CrossIndustryInvoice)ciiObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
-//		((CrossIndustryInvoice)ciiObject).setSellerTaxCompanyId(taxCompanyId); TODO
 	}
 
 	@Override

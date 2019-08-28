@@ -46,33 +46,6 @@ public class UblImpl extends AbstractEinvoice {
 		return delegate.getDocumentNo();
 	}
 
-	protected PostalAddress mapLocationToAddress(int location_ID, PostalAddressFactory addressFactory) {
-		MLocation mLocation = new MLocation(Env.getCtx(), location_ID, get_TrxName());
-		String countryCode = mLocation.getCountry().getCountryCode();
-		String postalCode = mLocation.getPostal();
-		String city = mLocation.getCity();
-		String street = null;
-		String a1 = mLocation.getAddress1();
-		String a2 = mLocation.getAddress2();
-		String a3 = mLocation.getAddress3();
-		String a4 = mLocation.getAddress4();
-		
-		PostalAddress address = addressFactory.createAddress(countryCode, postalCode, city);
-		if(a1!=null) address.setAddressLine1(a1);
-		if(a2!=null) address.setAddressLine2(a2);
-		if(a3!=null) address.setAddressLine3(a3);
-//		if(a4!=null) address.setAdditionalStreet(a4); // TODO ??????????????????
-		return address;
-	}
-	
-	protected IContact mapUserToContact(int user_ID, IContactFactory contactFactory) {
-		MUser mUser = new MUser(Env.getCtx(), user_ID, get_TrxName());
-		String contactName = mUser.getName();
-		String contactTel = mUser.getPhone();
-		String contactMail = mUser.getEMail();
-		return contactFactory.createContact(contactName, contactTel, contactMail);
-	}
-
 	@Override
 	public void setupTransformer(boolean isCreditNote) {
 		if(isCreditNote) {
