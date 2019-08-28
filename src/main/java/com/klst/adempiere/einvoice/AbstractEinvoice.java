@@ -28,6 +28,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.w3c.dom.Document;
 
+import com.klst.einvoice.CoreInvoice;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
@@ -47,8 +48,8 @@ public abstract class AbstractEinvoice extends SvrProcess implements InterfaceEi
 
 	private static final Logger LOG = Logger.getLogger(AbstractEinvoice.class.getName());
 	
-	static final String XRECHNUNG_12 = "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_1.2";
-	
+	static final String DEFAULT_PROFILE = CoreInvoice.PROFILE_XRECHNUNG;
+
 	/**
 	 * factory method
 	 * 

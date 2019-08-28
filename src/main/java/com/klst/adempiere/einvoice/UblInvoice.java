@@ -64,20 +64,17 @@ public class UblInvoice extends UblImpl {
 		PostalAddress address = mapLocationToAddress(location_ID, ((Invoice)ublObject));
 		IContact contact = mapUserToContact(user_ID, (Invoice)ublObject);
 		((Invoice)ublObject).setBuyer(buyerName, address, contact);
-//		((Invoice)ublObject).getBuyerParty().setRegistrationName(buyerName); // TODO raus Flick wg registrationName im Party ctor
 	}
 
 	@Override
 	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyId, String companyLegalForm, String taxRegistrationId) {
 		PostalAddress address = mapLocationToAddress(location_ID, ((Invoice)ublObject));
 		IContact contact = mapUserToContact(salesRep_ID, (Invoice)ublObject);
-//		((Invoice)ublObject).setSeller(sellerName, address, contact, companyID, companyLegalForm); // TODO PartyFactory mit registrationName !!!!
+// TODO PartyFactory mit registrationName !!!!
 		Party party = new Party(sellerName, address, contact);
-//		party.setRegistrationName(sellerName);
 		party.setCompanyId(companyId);
 		party.setCompanyLegalForm(companyLegalForm);
 		party.setTaxRegistrationId(taxRegistrationId);
-//		((Invoice)ublObject).getSellerParty().setTaxRegistrationId(taxCompanyId);
 		((Invoice)ublObject).setSellerParty(party);
 	}
 
@@ -108,7 +105,7 @@ public class UblInvoice extends UblImpl {
 
 	Object mapToEModel(MInvoice adInvoice) {
 		mInvoice = adInvoice;
-		Invoice obj = new CommercialInvoice(XRECHNUNG_12);
+		Invoice obj = new CommercialInvoice(DEFAULT_PROFILE);
 		obj.setId(mInvoice.getDocumentNo());
 		obj.setIssueDate(mInvoice.getDateInvoiced());
 		obj.setDocumentCurrency(mInvoice.getC_Currency().getISO_Code());

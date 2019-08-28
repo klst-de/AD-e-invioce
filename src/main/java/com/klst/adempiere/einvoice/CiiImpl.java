@@ -91,12 +91,13 @@ public class CiiImpl extends AbstractEinvoice {
 		PostalAddress address = mapLocationToAddress(location_ID, ((CrossIndustryInvoice)ciiObject));
 		IContact contact = mapUserToContact(salesRep_ID, (CrossIndustryInvoice)ciiObject);
 		((CrossIndustryInvoice)ciiObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
+		((CrossIndustryInvoice)ciiObject).getSellerParty().setTaxRegistrationId(taxCompanyId, "VA"); // TODO DEFAULT_TAX_SCHEME
 	}
 
 	@Override
 	Object mapToEModel(MInvoice mInvoice) {
 		this.mInvoice = mInvoice;
-		CrossIndustryInvoice obj = new CrossIndustryInvoice(XRECHNUNG_12, DocumentNameCode.CommercialInvoice);
+		CrossIndustryInvoice obj = new CrossIndustryInvoice(DEFAULT_PROFILE, DocumentNameCode.CommercialInvoice);
 		obj.setId(this.mInvoice.getDocumentNo());
 		obj.setIssueDate(this.mInvoice.getDateInvoiced());
 		obj.setDocumentCurrency(this.mInvoice.getC_Currency().getISO_Code());
