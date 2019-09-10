@@ -91,7 +91,7 @@ public class CiiImpl extends AbstractEinvoice {
 		PostalAddress address = mapLocationToAddress(location_ID, ((CrossIndustryInvoice)ciiObject));
 		IContact contact = mapUserToContact(salesRep_ID, (CrossIndustryInvoice)ciiObject);
 		((CrossIndustryInvoice)ciiObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
-		((CrossIndustryInvoice)ciiObject).getSellerParty().setTaxRegistrationId(taxCompanyId, "VA"); // TODO DEFAULT_TAX_SCHEME
+		((CrossIndustryInvoice)ciiObject).getSeller().setTaxRegistrationId(taxCompanyId, "VA"); // TODO DEFAULT_TAX_SCHEME
 	}
 
 	@Override

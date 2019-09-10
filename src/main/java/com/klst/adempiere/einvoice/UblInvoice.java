@@ -16,19 +16,20 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.klst.einvoice.BusinessParty;
+import com.klst.einvoice.CoreInvoiceLine;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
 import com.klst.einvoice.DirectDebit;
 import com.klst.einvoice.IContact;
 import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.PostalAddress;
-import com.klst.einvoice.ubl.CommercialInvoice;
-import com.klst.einvoice.ubl.Delivery;
-import com.klst.einvoice.ubl.Invoice;
-import com.klst.einvoice.ubl.InvoiceLine;
+import com.klst.einvoice.ubl.GenericInvoice;
+import com.klst.einvoice.ubl.GenericLine;
 import com.klst.einvoice.ubl.Party;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
+import com.klst.untdid.codelist.DocumentNameCode;
 import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
@@ -37,62 +38,64 @@ public class UblInvoice extends UblImpl {
 	private static final Logger LOG = Logger.getLogger(UblInvoice.class.getName());
 
 	private Object ublObject;
+	GenericInvoice<?> ublInvoice;
 
 	@Override
 	public String getDocumentNo() {
-		return ((Invoice)ublObject).getId();
+//    	GenericInvoice<InvoiceType> ublInvoice = new GenericInvoice<InvoiceType>((InvoiceType)ublObject);
+		return ublInvoice.getId();
 	}
 
 	@Override
 	void setBuyerReference(String buyerReference) {
-		((Invoice)ublObject).setBuyerReference(buyerReference);
+		ublInvoice.setBuyerReference(buyerReference);
 	}
 	
 	@Override
 	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
 			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
-		((Invoice)ublObject).setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
+		ublInvoice.setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
 	}
 	
 	@Override
 	void setPaymentTermsAndDate(String description, Timestamp ts) {
-		((Invoice)ublObject).setPaymentTermsAndDate(description, ts);
+		ublInvoice.setPaymentTermsAndDate(description, ts);
 	}
 
 	@Override
 	void mapByuer(String buyerName, int location_ID, int user_ID) {
-		PostalAddress address = mapLocationToAddress(location_ID, ((Invoice)ublObject));
-		IContact contact = mapUserToContact(user_ID, (Invoice)ublObject);
-		((Invoice)ublObject).setBuyer(buyerName, address, contact);
+		PostalAddress address = mapLocationToAddress(location_ID, ublInvoice);
+		IContact contact = mapUserToContact(user_ID, ublInvoice);
+		ublInvoice.setBuyer(buyerName, address, contact);
 	}
 
 	@Override
 	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyId, String companyLegalForm, String taxRegistrationId) {
-		PostalAddress address = mapLocationToAddress(location_ID, ((Invoice)ublObject));
-		IContact contact = mapUserToContact(salesRep_ID, (Invoice)ublObject);
-// TODO PartyFactory mit registrationName !!!!
-		Party party = new Party(sellerName, address, contact);
-		party.setCompanyId(companyId);
-		party.setCompanyLegalForm(companyLegalForm);
-		party.setTaxRegistrationId(taxRegistrationId);
-		((Invoice)ublObject).setSellerParty(party);
+		PostalAddress address = mapLocationToAddress(location_ID, ublInvoice);
+		IContact contact = mapUserToContact(salesRep_ID, ublInvoice);
+//		ublInvoice.setSeller(sellerName, address, contact, companyId, companyLegalForm);
+		BusinessParty seller = ublInvoice.createParty(sellerName, address, contact);
+		seller.setCompanyId(companyId);
+		seller.setCompanyLegalForm(companyLegalForm);
+		seller.setTaxRegistrationId(taxRegistrationId, Party.DEFAULT_TAX_SCHEME); // null no schemeID
+		ublInvoice.setSeller(seller);
 	}
 
 	@Override
 	void setTotals(Amount lineExtension, Amount taxExclusive, Amount taxInclusive, Amount payable, Amount taxTotal ) {
-		((Invoice)ublObject).setDocumentTotals(lineExtension, taxExclusive, taxInclusive, payable);
-		((Invoice)ublObject).setInvoiceTax(taxTotal);
+		ublInvoice.setDocumentTotals(lineExtension, taxExclusive, taxInclusive, payable);
+		ublInvoice.setInvoiceTax(taxTotal);
 	}
 
 	@Override
 	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
-		((Invoice)ublObject).addVATBreakDown(vatBreakdown);
+		ublInvoice.addVATBreakDown(vatBreakdown);
 	}
 
 	void mapLine(MInvoiceLine invoiceLine) {
 		int lineId = invoiceLine.getLine(); //Id
 		BigDecimal taxRate = invoiceLine.getC_Tax().getRate();
-		InvoiceLine line = new InvoiceLine(Integer.toString(lineId)
+		CoreInvoiceLine line = GenericLine.createInvoiceLine(Integer.toString(lineId)
 				, this.mapping.mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
 				, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
 				, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
@@ -100,16 +103,17 @@ public class UblInvoice extends UblImpl {
 				, TaxCategoryCode.StandardRate, taxRate
 				);
 		line.setDescription(invoiceLine.getDescription());
-		((Invoice)ublObject).addLine(line);		
+		ublInvoice.addLine(line);
 	}
 
 	Object mapToEModel(MInvoice adInvoice) {
 		mInvoice = adInvoice;
-		Invoice obj = new CommercialInvoice(DEFAULT_PROFILE);
-		obj.setId(mInvoice.getDocumentNo());
-		obj.setIssueDate(mInvoice.getDateInvoiced());
-		obj.setDocumentCurrency(mInvoice.getC_Currency().getISO_Code());
-		this.ublObject = obj;
+//		GenericInvoice<InvoiceType> ublInvoice = GenericInvoice.createInvoice(DEFAULT_PROFILE, null, DocumentNameCode.CommercialInvoice);
+		ublInvoice = GenericInvoice.createInvoice(DEFAULT_PROFILE, null, DocumentNameCode.CommercialInvoice);
+		ublInvoice.setId(mInvoice.getDocumentNo());
+		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
+		ublInvoice.setDocumentCurrency(mInvoice.getC_Currency().getISO_Code());
+		this.ublObject = ublInvoice.get();
 		super.mapBuyerReference();
 
 		makeOptionals();
@@ -151,7 +155,7 @@ public class UblInvoice extends UblImpl {
 	// overwrite this to set optional elements
 	protected void makeOptionals() {
 		// Description ==> optional INVOICE NOTE
-		((Invoice)ublObject).setNote(this.mapping.mapNote(mInvoice));
+		ublInvoice.setNote(this.mapping.mapNote(mInvoice));
 		
 //		String description = mInvoice.getDescription();
 //		if(description!=null) {
@@ -207,18 +211,16 @@ public class UblInvoice extends UblImpl {
 				
 				MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
 				String shipToTradeName = mBPartner.getName();
-				PostalAddress address = mapLocationToAddress(mC_Location_ID, (Invoice)ublObject);
-////				Contact contact = mapUserToContact(mUser_ID);
-////				address = null; // wg. UBL-CR-394 	warning
-////				contact = null; // wg. UBL-CR-398 	warning
-////				Party party = new Party(name, address, contact);
-//				Party party = new Party(null, null, null, null, null);
-//				party.setTradingBusinessName(shipToTradeName);
-				Delivery delivery = new Delivery(shipToTradeName, mInOutList.get(0).getMovementDate(), address, null);
-//				delivery.setActualDate(mInOutList.get(0).getMovementDate());
-//				delivery.setLocationAddress(address);
-				LOG.info("delivery.ActualDate:"+delivery.getActualDate() + " address:"+address);
-				((Invoice)ublObject).addDelivery(delivery);
+				PostalAddress address = mapLocationToAddress(mC_Location_ID, ublInvoice);
+////				Party party = new Party(null, null, null, null, null);
+////				party.setTradingBusinessName(shipToTradeName);
+//				Delivery delivery = new Delivery(shipToTradeName, mInOutList.get(0).getMovementDate(), address, null);
+////				delivery.setActualDate(mInOutList.get(0).getMovementDate());
+////				delivery.setLocationAddress(address);
+//				LOG.info("delivery.ActualDate:"+delivery.getActualDate() + " address:"+address);
+//				ublInvoice.addDelivery(delivery);
+							
+				ublInvoice.setDelivery(shipToTradeName, mInOutList.get(0).getMovementDate(), address, null, null);
 			}
 		} else {
 			LOG.warning("!!!!!!!!!!!!!!!!!!!!!! size="+mInOutList.size());
