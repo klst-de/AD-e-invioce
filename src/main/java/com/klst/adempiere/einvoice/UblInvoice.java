@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -16,21 +15,13 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.klst.einvoice.BusinessParty;
 import com.klst.einvoice.CoreInvoiceLine;
-import com.klst.einvoice.CoreInvoiceVatBreakdown;
-import com.klst.einvoice.CreditTransfer;
-import com.klst.einvoice.DirectDebit;
-import com.klst.einvoice.IContact;
-import com.klst.einvoice.PaymentCard;
 import com.klst.einvoice.PostalAddress;
 import com.klst.einvoice.ubl.GenericInvoice;
 import com.klst.einvoice.ubl.GenericLine;
-import com.klst.einvoice.ubl.Party;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
 import com.klst.untdid.codelist.DocumentNameCode;
-import com.klst.untdid.codelist.PaymentMeansEnum;
 import com.klst.untdid.codelist.TaxCategoryCode;
 
 public class UblInvoice extends UblImpl {

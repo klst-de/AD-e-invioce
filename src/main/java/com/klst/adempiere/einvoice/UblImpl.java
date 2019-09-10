@@ -70,8 +70,13 @@ public class UblImpl extends AbstractEinvoice {
 
 	@Override
 	Object mapToEModel(MInvoice mInvoice) {
-		// TODO Auto-generated method stub
+		// implemented in subclass
 		return null;
+	}
+
+	@Override
+	void mapLine(MInvoiceLine line) {
+		// implemented in subclass
 	}
 
 	@Override
@@ -149,12 +154,6 @@ public class UblImpl extends AbstractEinvoice {
 	@Override
 	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
 		ublInvoice.addVATBreakDown(vatBreakdown);
-	}
-
-	@Override
-	void mapLine(MInvoiceLine line) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
