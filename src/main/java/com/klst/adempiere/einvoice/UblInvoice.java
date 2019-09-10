@@ -42,7 +42,6 @@ public class UblInvoice extends UblImpl {
 
 	@Override
 	public String getDocumentNo() {
-//    	GenericInvoice<InvoiceType> ublInvoice = new GenericInvoice<InvoiceType>((InvoiceType)ublObject);
 		return ublInvoice.getId();
 	}
 
@@ -108,7 +107,6 @@ public class UblInvoice extends UblImpl {
 
 	Object mapToEModel(MInvoice adInvoice) {
 		mInvoice = adInvoice;
-//		GenericInvoice<InvoiceType> ublInvoice = GenericInvoice.createInvoice(DEFAULT_PROFILE, null, DocumentNameCode.CommercialInvoice);
 		ublInvoice = GenericInvoice.createInvoice(DEFAULT_PROFILE, null, DocumentNameCode.CommercialInvoice);
 		ublInvoice.setId(mInvoice.getDocumentNo());
 		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
@@ -207,18 +205,10 @@ public class UblInvoice extends UblImpl {
 				LOG.info("!!!!!!!!!!!!!!!!!!!!!! kein Delivery! size="+mInOutList.size());
 			} else {
 				int mC_Location_ID = mInOutList.get(0).getC_BPartner_Location().getC_Location_ID();
-//				int mUser_ID = mInOutList.get(0).getAD_User_ID();
 				
 				MBPartner mBPartner = new MBPartner(Env.getCtx(), mBP_ID, get_TrxName());
 				String shipToTradeName = mBPartner.getName();
 				PostalAddress address = mapLocationToAddress(mC_Location_ID, ublInvoice);
-////				Party party = new Party(null, null, null, null, null);
-////				party.setTradingBusinessName(shipToTradeName);
-//				Delivery delivery = new Delivery(shipToTradeName, mInOutList.get(0).getMovementDate(), address, null);
-////				delivery.setActualDate(mInOutList.get(0).getMovementDate());
-////				delivery.setLocationAddress(address);
-//				LOG.info("delivery.ActualDate:"+delivery.getActualDate() + " address:"+address);
-//				ublInvoice.addDelivery(delivery);
 							
 				ublInvoice.setDelivery(shipToTradeName, mInOutList.get(0).getMovementDate(), address, null, null);
 			}

@@ -93,7 +93,6 @@ public class UblCreditNote extends UblImpl {
 	Object mapToEModel(MInvoice adInvoice) {
 		mInvoice = adInvoice;
 		ublInvoice = GenericInvoice.createCreditNote(DEFAULT_PROFILE, null, DocumentNameCode.CreditNote);
-//		CreditNote obj = new CreditNote(DEFAULT_PROFILE, null, DocumentNameCode.CreditNote);
 		ublInvoice.setId(mInvoice.getDocumentNo());
 		ublInvoice.setIssueDate(mInvoice.getDateInvoiced());
 		ublInvoice.setDocumentCurrency(mInvoice.getC_Currency().getISO_Code());
