@@ -38,57 +38,10 @@ public class UblInvoice extends UblImpl {
 	private static final Logger LOG = Logger.getLogger(UblInvoice.class.getName());
 
 	private Object ublObject;
-	GenericInvoice<?> ublInvoice;
 
 	@Override
 	public String getDocumentNo() {
 		return ublInvoice.getId();
-	}
-
-	@Override
-	void setBuyerReference(String buyerReference) {
-		ublInvoice.setBuyerReference(buyerReference);
-	}
-	
-	@Override
-	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation
-			, CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
-		ublInvoice.setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
-	}
-	
-	@Override
-	void setPaymentTermsAndDate(String description, Timestamp ts) {
-		ublInvoice.setPaymentTermsAndDate(description, ts);
-	}
-
-	@Override
-	void mapByuer(String buyerName, int location_ID, int user_ID) {
-		PostalAddress address = mapLocationToAddress(location_ID, ublInvoice);
-		IContact contact = mapUserToContact(user_ID, ublInvoice);
-		ublInvoice.setBuyer(buyerName, address, contact);
-	}
-
-	@Override
-	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyId, String companyLegalForm, String taxRegistrationId) {
-		PostalAddress address = mapLocationToAddress(location_ID, ublInvoice);
-		IContact contact = mapUserToContact(salesRep_ID, ublInvoice);
-//		ublInvoice.setSeller(sellerName, address, contact, companyId, companyLegalForm);
-		BusinessParty seller = ublInvoice.createParty(sellerName, address, contact);
-		seller.setCompanyId(companyId);
-		seller.setCompanyLegalForm(companyLegalForm);
-		seller.setTaxRegistrationId(taxRegistrationId, Party.DEFAULT_TAX_SCHEME); // null no schemeID
-		ublInvoice.setSeller(seller);
-	}
-
-	@Override
-	void setTotals(Amount lineExtension, Amount taxExclusive, Amount taxInclusive, Amount payable, Amount taxTotal ) {
-		ublInvoice.setDocumentTotals(lineExtension, taxExclusive, taxInclusive, payable);
-		ublInvoice.setInvoiceTax(taxTotal);
-	}
-
-	@Override
-	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
-		ublInvoice.addVATBreakDown(vatBreakdown);
 	}
 
 	void mapLine(MInvoiceLine invoiceLine) {
