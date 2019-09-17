@@ -267,53 +267,18 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		}
 	}
 
-//	@Test
-//	public void test0() {
-//		UblImpl ublInvoice = new UblImpl();
-//		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[0], ublInvoice.get_TrxName());
-//		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
-//		
-//		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
-////		assertNull(xmlBytes);
-//		LOG.info("xml=\n"+new String(xmlBytes));
-//		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
-//		assertTrue(check(xmlBytes));
-//		
-//		try {
-//			org.w3c.dom.Document doc = ublInvoice.tranformToDomDocument(xmlBytes);
-//			LOG.info("DocumentURI:"+doc.getDocumentURI());
-//			LOG.info("BaseURI:"+doc.getBaseURI());
-//			LOG.info("NamespaceURI:"+doc.getNamespaceURI());
-//			LOG.info("XmlVersion:"+doc.getXmlVersion());
-//			LOG.info("NodeType:"+doc.getNodeType()); // DOCUMENT_NODE             = 9;
-//			LOG.info("ChildNode#:"+doc.getChildNodes().getLength());
-//			Node node = doc.getFirstChild();
-//			if(node!=null) {
-////				LOG.info("FirstChild:"+node);
-//				NodeList nodeList = node.getChildNodes();
-//				for(int i=0; i<nodeList.getLength(); i++) {
-////					LOG.info("Child "+i + ":"+nodeList.item(i));
-//				}
-//				LOG.info("FirstChild:"+node+" has "+nodeList.getLength()+" childs.");
-//			}
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-//	
-//	@Test
-//	public void test1() {
-//		UblImpl ublInvoice = new UblImpl();
-//		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, ublInvoice.get_TrxName());
-//		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
-//
-//		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
-//		LOG.info("xml=\n"+new String(xmlBytes));
-//		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
-//		assertTrue(check(xmlBytes));
-//	}
-//	   
+	@Test
+	public void test1() {
+		CiiImpl invoice = new CiiImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053453, invoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = invoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(invoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
+	   
 //	@Test
 //	public void testSepaDirectDebit() {
 //		UblImpl ublInvoice = new UblImpl();
@@ -325,40 +290,40 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 //		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
 //		assertTrue(check(xmlBytes));
 //	}
-//	   
+	   
+	@Test
+	public void testRO_Rolle() {
+		CiiImpl invoice = new CiiImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1012810, invoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = invoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(invoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
+	   
+	@Test
+	public void testUTF8() {
+		CiiImpl invoice = new CiiImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053563, invoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = invoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(invoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
+	   
 //	@Test
-//	public void testRO_Rolle() {
-//		UblImpl ublInvoice = new UblImpl();
-//		MInvoice mInvoice = new MInvoice(adempiereCtx, 1012810, ublInvoice.get_TrxName());
-//		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
-//
-//		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
-//		LOG.info("xml=\n"+new String(xmlBytes));
-//		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
-//		assertTrue(check(xmlBytes));
-//	}
-//	   
-//	@Test
-//	public void testUTF8() {
-//		UblImpl ublInvoice = new UblImpl();
-//		MInvoice mInvoice = new MInvoice(adempiereCtx, 1053563, ublInvoice.get_TrxName());
-//		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
-//
-//		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
-//		LOG.info("xml=\n"+new String(xmlBytes));
-//		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
-//		assertTrue(check(xmlBytes));
-//	}
-//	   
-//	@Test
-//	public void ubl() {
+//	public void testAll() {
 //		for (int i = 1; i < INVOICE_ID.length; i++) {
-//			UblImpl ublInvoice = new UblImpl();
-//			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], ublInvoice.get_TrxName());
+//			CiiImpl invoice = new CiiImpl();
+//			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], invoice.get_TrxName());
 //			LOG.info("---------------------- "+mInvoice.toString());
-//			byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
+//			byte[] xmlBytes = invoice.tranformToXML(mInvoice);
 ////		LOG.info("xml=\n"+new String(xmlBytes));
-//			assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+//			assertEquals(invoice.getDocumentNo(), mInvoice.getDocumentNo());
 //			assertTrue(check(xmlBytes));
 //		}
 //	}
