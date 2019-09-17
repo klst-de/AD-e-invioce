@@ -72,13 +72,18 @@ public class CiiImpl extends AbstractEinvoice {
 
 	@Override
 	void setTotals(Amount lineExtension, Amount taxExclusive, Amount taxInclusive, Amount payable, Amount taxTotal) {
-		invoice.setDocumentTotals(lineExtension, taxExclusive, taxInclusive, payable);
+		// https://github.com/klst-de/AD-e-invoice/issues/4 : CII : currencyID should not be present
+		invoice.setDocumentTotals( new Amount(null, lineExtension.getValue()) 
+				, new Amount(null, taxExclusive.getValue()) 
+				, new Amount(null, taxInclusive.getValue()) 
+				, new Amount(null, payable.getValue()) );
 		invoice.setInvoiceTax(taxTotal);
 	}
 
 	@Override
 	CoreInvoiceVatBreakdown createVatBreakdown(Amount taxableAmount, Amount taxAmount, TaxCategoryCode codeEnum, BigDecimal percent) {
-		return new VatBreakdown(taxableAmount, taxAmount, codeEnum, percent);
+		// https://github.com/klst-de/AD-e-invoice/issues/4 : CII : currencyID should not be present
+		return new VatBreakdown(new Amount(null, taxableAmount.getValue()), new Amount(null, taxAmount.getValue()), codeEnum, percent);
 	}
 
 	@Override
@@ -137,7 +142,7 @@ public class CiiImpl extends AbstractEinvoice {
     	CoreInvoiceLine line = new TradeLineItem
     			( Integer.toString(lineId)
     			, this.mapping.mapToQuantity(invoiceLine.getC_UOM().getX12DE355(), invoiceLine.getQtyInvoiced())
-    			, new Amount(mInvoice.getCurrencyISO(), invoiceLine.getLineNetAmt())
+    			, new Amount(null, invoiceLine.getLineNetAmt()) // https://github.com/klst-de/AD-e-invoice/issues/4 : CII : currencyID should not be present
     			, new UnitPriceAmount(mInvoice.getCurrencyISO(), invoiceLine.getPriceActual())
     			, invoiceLine.getProduct().getName()
     			, TaxCategoryCode.StandardRate, taxRate
