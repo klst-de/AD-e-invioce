@@ -19,6 +19,7 @@ import com.klst.einvoice.PostalAddress;
 import com.klst.einvoice.unece.uncefact.Amount;
 import com.klst.einvoice.unece.uncefact.BICId;
 import com.klst.einvoice.unece.uncefact.CrossIndustryInvoice;
+import com.klst.einvoice.unece.uncefact.FinancialAccount;
 import com.klst.einvoice.unece.uncefact.IBANId;
 import com.klst.einvoice.unece.uncefact.TradeLineItem;
 import com.klst.einvoice.unece.uncefact.UnitPriceAmount;
@@ -67,6 +68,9 @@ public class CiiImpl extends AbstractEinvoice {
 	@Override
 	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation,
 			CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
+		// [BR-DE-13] In der Rechnung müssen Angaben zu genau einer der drei Gruppen 
+		//  "CREDIT TRANSFER" (BG-17), "PAYMENT CARD INFORMATION" (BG-18) oder "DIRECT DEBIT" (BG-19) übermittelt werden
+		LOG.info("CREDIT TRANSFER (BG-17):"+creditTransfer + " PAYMENT CARD INFORMATION (BG-18):"+creditTransfer+ " DIRECT DEBIT (BG-19):"+directDebit);
 		invoice.setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
 	}
 
@@ -151,17 +155,15 @@ public class CiiImpl extends AbstractEinvoice {
 		invoice.addLine(line);		
 	}
 
-	// factory methods ----------------- TODO to be implemented in future
+	// factory methods
 	@Override
 	CreditTransfer createCreditTransfer(IBANId iban, String accountName, BICId bic) {
-		// TODO Auto-generated method stub
-		return null;
+		return new FinancialAccount(iban, accountName, bic);
 	}
 
 	@Override
 	CreditTransfer createCreditTransfer(String accountId, String accountName, BICId bic) {
-		// TODO Auto-generated method stub
-		return null;
+		return new FinancialAccount(accountId, accountName, bic);
 	}
 
 	@Override
