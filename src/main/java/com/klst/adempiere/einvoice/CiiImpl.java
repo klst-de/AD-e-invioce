@@ -2,10 +2,13 @@ package com.klst.adempiere.einvoice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.logging.Logger;
 
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 
+import com.klst.einvoice.BusinessParty;
+import com.klst.einvoice.CoreInvoice;
 import com.klst.einvoice.CoreInvoiceLine;
 import com.klst.einvoice.CoreInvoiceVatBreakdown;
 import com.klst.einvoice.CreditTransfer;
@@ -27,7 +30,10 @@ import com.klst.untdid.codelist.TaxCategoryCode;
 
 public class CiiImpl extends AbstractEinvoice {
 
+	private static final Logger LOG = Logger.getLogger(CiiImpl.class.getName());
+	
 	protected Object ciiObject;
+	private CoreInvoice invoice;
 
 	@Override
 	public String getDocumentNo() {
@@ -49,24 +55,25 @@ public class CiiImpl extends AbstractEinvoice {
 
 	@Override
 	void setBuyerReference(String buyerReference) {
-		((CrossIndustryInvoice)ciiObject).setBuyerReference(buyerReference);
+		invoice.setBuyerReference(buyerReference);
 	}
 
 	@Override
 	void setPaymentTermsAndDate(String description, Timestamp ts) {
-		((CrossIndustryInvoice)ciiObject).setPaymentTermsAndDate(description, ts);
+		LOG.info("Payment terms (BT-20) & Payment due date (BT-9): description:"+description + " due date:"+ts);
+		invoice.setPaymentTermsAndDate(description, ts);
 	}
 
 	@Override
 	void setPaymentInstructions(PaymentMeansEnum code, String paymentMeansText, String remittanceInformation,
 			CreditTransfer creditTransfer, PaymentCard paymentCard, DirectDebit directDebit) {
-		// TODO Auto-generated method stub	
+		invoice.setPaymentInstructions(code, paymentMeansText, remittanceInformation, creditTransfer, paymentCard, directDebit);
 	}
 
 	@Override
 	void setTotals(Amount lineExtension, Amount taxExclusive, Amount taxInclusive, Amount payable, Amount taxTotal) {
-		// TODO Auto-generated method stub
-		
+		invoice.setDocumentTotals(lineExtension, taxExclusive, taxInclusive, payable);
+		invoice.setInvoiceTax(taxTotal);
 	}
 
 	@Override
@@ -76,32 +83,34 @@ public class CiiImpl extends AbstractEinvoice {
 
 	@Override
 	void addVATBreakDown(CoreInvoiceVatBreakdown vatBreakdown) {
-		((CrossIndustryInvoice)ciiObject).addVATBreakDown(vatBreakdown);
+		invoice.addVATBreakDown(vatBreakdown);
 	}
 
 	@Override
 	void mapByuer(String buyerName, int location_ID, int user_ID) {
 		PostalAddress address = mapLocationToAddress(location_ID, ((CrossIndustryInvoice)ciiObject));
 		IContact contact = mapUserToContact(user_ID, (CrossIndustryInvoice)ciiObject);
-		((CrossIndustryInvoice)ciiObject).setBuyer(buyerName, address, contact);
+		invoice.setBuyer(buyerName, address, contact);
 	}
 	
 	@Override
-	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyID, String companyLegalForm, String taxCompanyId) {
+	void mapSeller(String sellerName, int location_ID, int salesRep_ID, String companyId, String companyLegalForm, String taxRegistrationId) {
 		PostalAddress address = mapLocationToAddress(location_ID, ((CrossIndustryInvoice)ciiObject));
 		IContact contact = mapUserToContact(salesRep_ID, (CrossIndustryInvoice)ciiObject);
-		((CrossIndustryInvoice)ciiObject).setSeller(sellerName, address, contact, companyID, companyLegalForm);
-		((CrossIndustryInvoice)ciiObject).getSeller().setTaxRegistrationId(taxCompanyId, "VA"); // TODO DEFAULT_TAX_SCHEME
+		BusinessParty seller = invoice.createParty(sellerName, address, contact);
+		seller.setCompanyId(companyId);
+		seller.setCompanyLegalForm(companyLegalForm);
+		seller.setTaxRegistrationId(taxRegistrationId, "VA"); // TODO DEFAULT_TAX_SCHEME
+		invoice.setSeller(seller);
 	}
 
 	@Override
 	Object mapToEModel(MInvoice mInvoice) {
 		this.mInvoice = mInvoice;
-		CrossIndustryInvoice obj = new CrossIndustryInvoice(DEFAULT_PROFILE, DocumentNameCode.CommercialInvoice);
-		obj.setId(this.mInvoice.getDocumentNo());
-		obj.setIssueDate(this.mInvoice.getDateInvoiced());
-		obj.setDocumentCurrency(this.mInvoice.getC_Currency().getISO_Code());
-		this.ciiObject = obj;
+		invoice = new CrossIndustryInvoice(DEFAULT_PROFILE, DocumentNameCode.CommercialInvoice);
+		invoice.setId(this.mInvoice.getDocumentNo());
+		invoice.setIssueDate(this.mInvoice.getDateInvoiced());
+		this.ciiObject = invoice;
 		super.mapBuyerReference();
 //
 //		makeOptionals();
@@ -109,7 +118,12 @@ public class CiiImpl extends AbstractEinvoice {
 		super.mapSellerGroup(); 
 		super.mapBuyerGroup(); 
 //		
-//		makePaymentGroup();
+		super.mapPaymentGroup();
+		
+		String documentCurrency = this.mInvoice.getC_Currency().getISO_Code();
+		LOG.info("Document currency code (BT-5):"+documentCurrency);
+		invoice.setDocumentCurrency(documentCurrency);
+		
 		super.mapDocumentTotals();
 		super.mapVatBreakDownGroup();
 		super.mapLineGroup();
@@ -129,7 +143,7 @@ public class CiiImpl extends AbstractEinvoice {
     			, TaxCategoryCode.StandardRate, taxRate
     			);
 		line.setDescription(invoiceLine.getDescription());
-		((CrossIndustryInvoice)ciiObject).addLine(line);		
+		invoice.addLine(line);		
 	}
 
 	// factory methods ----------------- TODO to be implemented in future
