@@ -279,17 +279,17 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-//	@Test
-//	public void testSepaDirectDebit() {
-//		UblImpl ublInvoice = new UblImpl();
-//		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[1], ublInvoice.get_TrxName());
-//		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
-//
-//		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
-//		LOG.info("xml=\n"+new String(xmlBytes));
-//		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
-//		assertTrue(check(xmlBytes));
-//	}
+	@Test
+	public void testSepaDirectDebit() {
+		UblImpl ublInvoice = new UblImpl();
+		MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[1], ublInvoice.get_TrxName());
+		LOG.info("docBaseType='"+mInvoice.getC_DocTypeTarget().getDocBaseType() + "' for "+mInvoice);
+
+		byte[] xmlBytes = ublInvoice.tranformToXML(mInvoice);
+		LOG.info("xml=\n"+new String(xmlBytes));
+		assertEquals(ublInvoice.getDocumentNo(), mInvoice.getDocumentNo());
+		assertTrue(check(xmlBytes));
+	}
 	   
 	@Test
 	public void testRO_Rolle() {
@@ -315,17 +315,17 @@ Die für die maschinelle Auswertung des Prüfberichts wesentlichsten Angaben sin
 		assertTrue(check(xmlBytes));
 	}
 	   
-//	@Test
-//	public void testAll() {
-//		for (int i = 1; i < INVOICE_ID.length; i++) {
-//			CiiImpl invoice = new CiiImpl();
-//			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], invoice.get_TrxName());
-//			LOG.info("---------------------- "+mInvoice.toString());
-//			byte[] xmlBytes = invoice.tranformToXML(mInvoice);
-////		LOG.info("xml=\n"+new String(xmlBytes));
-//			assertEquals(invoice.getDocumentNo(), mInvoice.getDocumentNo());
-//			assertTrue(check(xmlBytes));
-//		}
-//	}
+	@Test
+	public void testAll() {
+		for (int i = 1; i < INVOICE_ID.length; i++) {
+			CiiImpl invoice = new CiiImpl();
+			MInvoice mInvoice = new MInvoice(adempiereCtx, INVOICE_ID[i], invoice.get_TrxName());
+			LOG.info("---------------------- "+mInvoice.toString());
+			byte[] xmlBytes = invoice.tranformToXML(mInvoice);
+//		LOG.info("xml=\n"+new String(xmlBytes));
+			assertEquals(invoice.getDocumentNo(), mInvoice.getDocumentNo());
+			assertTrue(check(xmlBytes));
+		}
+	}
 
 }

@@ -168,8 +168,8 @@ public class CiiImpl extends AbstractEinvoice {
 
 	@Override
 	DirectDebit createDirectDebit(String mandateID, String bankAssignedCreditorID, IBANId iban) {
-		// TODO Auto-generated method stub
-		return null;
+		LOG.info("not supported mandateID (BT-89):"+mandateID + ", bankAssignedCreditorID (BT-90):"+bankAssignedCreditorID + ", Debited iban (BT-91):"+iban);
+		return new FinancialAccount(iban);
 	}
 
 	@Override
